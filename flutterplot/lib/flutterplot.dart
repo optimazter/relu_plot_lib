@@ -1,7 +1,6 @@
 library flutterplot;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'src/annotation.dart' show Annotation;
+export 'src/graph.dart' show Graph;
+export 'src/plot.dart' show Plot;
+export 'src/crosshair.dart' show Crosshair;
