@@ -36,8 +36,10 @@ void main() {
 
     await tester.pumpWidget(
       Plot(
-        graph: [simpleLine])
-        );
+
+        graphs: [simpleLine])
+      
+      );
     
 });
 
