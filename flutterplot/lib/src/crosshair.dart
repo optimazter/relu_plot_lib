@@ -19,7 +19,6 @@ class Crosshair {
 
   double x = 0;
 
-  int idx = 0;
   
 
 
