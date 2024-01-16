@@ -10,6 +10,7 @@ class Graph {
     required this.Y,
     this.color,
     this.linethickness,
+    this.numHorizontalGridLines,
     this.annotations,
     this.crosshair,
   }
@@ -21,6 +22,7 @@ class Graph {
   final List<double> Y;
   final Color? color;
   final double? linethickness;
+  final double? numHorizontalGridLines;
   final List<Annotation>? annotations;
   final Crosshair? crosshair;
 
@@ -62,6 +64,8 @@ class Graph {
 
     yMax = Y.reduce(max);
     yMin = Y.reduce(min);
+
+    
 
   }
   

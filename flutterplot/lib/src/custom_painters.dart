@@ -1,8 +1,8 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutterplot/src/graph.dart';
 import 'package:flutterplot/src/plot.dart';
+
+
 
 class GraphPainter extends CustomPainter {
 
@@ -16,19 +16,21 @@ class GraphPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
 
     final Paint graphPaint = Paint();
+    final Paint gridPaint = Paint()..color = Colors.black;
 
     for (Graph graph in state.widget.graphs) { 
 
       graphPaint.color = graph.color ?? Colors.black;
       graphPaint.strokeWidth = graph.linethickness ?? 1;
 
-      _drawGraph(canvas, graphPaint, graph.X, graph.Y);
+      _paintGraph(canvas, graphPaint, graph.X, graph.Y);
+      //_paintGridLines(canvas, gridPaint, size,  graph.numHorizontalGridLines ?? 5, graph.numHorizontalGridLines ?? 5);
 
       }
 
     }
 
-  void _drawGraph(Canvas canvas,  Paint paintBrush,  List<double> X, List<double> Y) {
+  void _paintGraph(Canvas canvas,  Paint paintBrush,  List<double> X, List<double> Y) {
 
     debugPrint('repainting graphs');
     for (int i = 0; i < X.length - 1; i ++) {
@@ -38,6 +40,13 @@ class GraphPainter extends CustomPainter {
     }
     
     
+  }
+
+
+
+  void _paintAxis(Canvas canvas, Paint paintBrush) {
+
+
   }
 
 
@@ -118,8 +127,6 @@ class CrosshairPainter extends CustomPainter {
       //Crosshair text
       textPainter.paint(canvas, Offset(pxXBox - width / 2 + 5, pxYBox + height / 2));
     }
-
-
 
 
 

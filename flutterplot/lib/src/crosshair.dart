@@ -1,7 +1,5 @@
 
 
-import 'package:flutter/material.dart';
-
 class Crosshair {
   
   Crosshair(
@@ -9,7 +7,7 @@ class Crosshair {
     required this.active, 
     required this.yPadding,
     this.width = 80,
-    this.height = 40});
+    this.height = 40,});
 
   final String label;
   final bool active;
@@ -18,9 +16,9 @@ class Crosshair {
   final double height;
 
   double x = 0;
+  int prevIndex = 0;
 
   
-
 
   @override
   bool operator ==(Object other) =>
