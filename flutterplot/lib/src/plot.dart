@@ -1,335 +1,273 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'dart:math';
-
+import 'package:flutterplot/src/annotation.dart';
 import 'package:flutterplot/src/custom_painters.dart';
+import 'package:flutterplot/src/provider.dart';
 
 
-const int xId = 0;
-
-const int yId = 1;
-
-enum ConversionMethod {nearest, interpolation}
-
-
-class Plot extends StatefulWidget {   
+class Plot extends StatelessWidget {   
   
   const Plot({
     Key? key,
     required this.graphs,
-    this.xAxis,
-    this.yAxis,
     this.xUnit,
     this.yUnit, 
+    this.xTicks,
+    this.yTicks,
+    this.numXTicks,
+    this.numYTicks,
+    this.showGrid = true,
     this.strokeWidth = 1,
     this.padding = 0,
-    this.conversionMethod = ConversionMethod.nearest,
+    this.fractionDigits = 0,
   }) : super(key: key);
 
 
   final List<Graph> graphs;
-
-  final List<double>? xAxis;
-  final List<double>? yAxis;
   
   final String? xUnit;
   final String? yUnit;
 
+  final List<double>? xTicks;
+  final List<double>? yTicks;
+
+  final int? numXTicks;
+  final int? numYTicks;
+
+  final bool showGrid;
+
   final double strokeWidth;
   final double padding;
-
-  final ConversionMethod conversionMethod;
+  final int fractionDigits;
   
   @override
-  State<StatefulWidget> createState() => PlotState();
+  Widget build(BuildContext context) => ProviderScope(
+    child: InteractivePlot(state: PlotStateManager(plot: this)),
+  );
+
   
 }
 
+class InteractivePlot extends StatefulWidget { 
 
-class PlotState extends State<Plot> {
+  InteractivePlot({required this.state});
 
-
-  final Map<double, double> xPixelLUT = {};
-  final Map<double, double> yPixelLUT = {};
-
-
-  BoxConstraints? windowConstraints;
-
-  final _Scaler xScaler = _Scaler();
-  final _Scaler yScaler = _Scaler();
-
-
-
-  double? _getXValueFromPixel(double pxX) {
-
-    double x = xScaler.inverse(pxX);
-    List<double> greater = xPixelLUT.keys.where((e) => e >= x).toList()..sort();
-    return greater.firstOrNull;
-
-  }
-
-
-  int _getXIndexFromPixel(Graph graph, double pxX,  Offset delta, int prevIndex) {
-
-    double x = xScaler.inverse(pxX);
-
-
-
-    if (delta.dx < 0) {
-
-      for (int i = prevIndex - 1; i > 1; i --) {
-
-        if (graph.X[i - 1] <= x && x <= graph.X[i + 1]) {
-          
-          return i;
-
-        }
-      }
-      return 0; 
-    }
-
-    for (int i = prevIndex + 1; i < graph.X.length - 1; i ++) {
-
-      if (graph.X[i - 1] <= x && x <= graph.X[i + 1]) {
-        
-        return i;
-
-      }
-    } 
-    return graph.X.length - 1;
-
-    }
-
-
-  void _init(List<Graph> graph, BoxConstraints windowConstraints) {
-
-        debugPrint('Initializing');
-
-        this.windowConstraints = windowConstraints;
-
-        double xMin = double.infinity;
-        double xMax = double.negativeInfinity;
-        double yMin = double.infinity;
-        double yMax = double.negativeInfinity;
-        
-
-        for (Graph graph in widget.graphs) {
-
-          xMin = min(xMin, graph.X.reduce(min));
-          xMax = max(xMax, graph.X.reduce(max));
-
-
-          yMin = min(yMin, graph.Y.reduce(min));
-          yMax = max(yMax, graph.Y.reduce(max));
-
-        }
-
-        xScaler.setScaling(xMin, xMax, widget.padding, windowConstraints.maxWidth - widget.padding);
-        yScaler.setScaling(yMin, yMax, widget.padding, windowConstraints.maxHeight - widget.padding);
-
-
-        for (Graph graph in widget.graphs) {
-
-          for (int i = 0; i < graph.X.length; i++) {
-
-            double pxX = xScaler.scale(graph.X[i]);
-            double pxY = yScaler.scale(graph.Y[i]);
-
-            xPixelLUT[graph.X[i]] = pxX;
-            yPixelLUT[graph.Y[i]] = windowConstraints.maxHeight - pxY;
-
-
-          }
-
-        }
-
-
-    }
-
+  final PlotStateManager state;
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (_, windowConstraints) {
-
-        _init(widget.graphs, windowConstraints);
-
-        return Stack(
-          children: [
-            BackgroundLayer(state: this),
-            ForegroundLayer(state: this),
-            ]
-        );
-      }
-    );
-  }
-
-}
-  
-
-
-class BackgroundLayer extends StatelessWidget {
-  
-  const BackgroundLayer({
-    super.key, 
-    required this.state,
-  });
-
-  final PlotState state;
-  
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: state.windowConstraints!.maxWidth,
-      height: state.windowConstraints!.maxHeight,
-      child: RepaintBoundary(
-        child: CustomPaint(
-          painter: GraphPainter(state),
-          )
-        ),
-    );
-  }
-}
-
-class ForegroundLayer extends StatefulWidget {
-
-  const ForegroundLayer({
-    super.key, 
-    required this.state,
-  });
-
-  final PlotState state;
-  
-  @override
-  State<StatefulWidget> createState() => ForegroundState();
-
+  State<StatefulWidget> createState() => InteractivePlotState();
 
 }
 
 
-class ForegroundState extends State<ForegroundLayer> {
+
+class InteractivePlotState extends State<InteractivePlot> {
 
   late final PanGestureRecognizer recognizer;
-
+  final List<LogicalKeyboardKey> keys = [];
+  bool shiftDown = false;
+  bool controlDown = false;
+  bool rightClick = false;
+  bool annotationMovement = false;
 
   @override
   void initState() {
     super.initState();
-    recognizer = PanGestureRecognizer()
-    ..onStart = _onPanStart
-    ..onUpdate = _onPanUpdate
-    ..onEnd = _onPanEnd;
+    HardwareKeyboard.instance.addHandler(_handleKeyDownUp);
   }
+
+  void _handleMouseScroll(double dy, WidgetRef ref) {
+ 
+    if (shiftDown) {
+      var constrained = widget.state.setXConstraints(dy);
+      if (constrained) {
+        widget.state.resize(true, false);
+        widget.state.repaintPlot(ref);
+
+      }
+
+    }
+    else if (controlDown) {
+      var constrained = widget.state.setYConstraints(dy);
+      if (constrained) {
+        widget.state.resize(false, true);
+        widget.state.repaintPlot(ref);
+
+      }
+    }
+    else {
+      var xConstrained = widget.state.setXConstraints(dy);
+      var yConstrained = widget.state.setYConstraints(dy);
+      if (xConstrained && yConstrained) {
+        widget.state.resize();
+        widget.state.repaintPlot(ref);
+
+      }
+      else if (xConstrained) {
+        widget.state.resize(true, false);
+        widget.state.repaintPlot(ref);
+
+      }
+      else if (yConstrained) {
+        widget.state.resize(false, true);
+        widget.state.repaintPlot(ref);
+
+      }
+    }
+
+  }
+
+  void _handlePointerDown(PointerDownEvent event, WidgetRef ref) {
+    if (widget.state.currentInteraction != Interaction.annotation) {
+      if (event.kind == PointerDeviceKind.mouse && event.buttons == kSecondaryMouseButton) {
+        widget.state.currentInteraction = Interaction.graph;
+      } else {
+        widget.state.currentInteraction = Interaction.crosshair;
+      }
+    }
+  }
+  
+
+
+
+  void _handlePointerMove(PointerMoveEvent event, WidgetRef ref) {
+    switch(widget.state.currentInteraction) {
+      case Interaction.annotation:
+        break;
+      case Interaction.crosshair:
+        widget.state.moveActiveCrosshairs(event);
+        widget.state.repaintCrosshairs(ref);
+        break;
+      case Interaction.graph:
+        widget.state.movePlot(event.delta);
+        widget.state.resize();
+        widget.state.repaintPlot(ref);
+        break;
+
+
+    }
+  }
+
+  
+
+  bool _handleKeyDownUp(KeyEvent event) {
+
+    if (event.logicalKey == LogicalKeyboardKey.shift || event.logicalKey == LogicalKeyboardKey.shiftLeft) {
+      shiftDown = event is KeyDownEvent;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.control || event.logicalKey == LogicalKeyboardKey.controlLeft) {
+      controlDown = event is KeyDownEvent;
+    }
+    return shiftDown || controlDown;
+    
+  }
+
 
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (event) {
-        recognizer.addPointer(event);
-        } ,
-      child: SizedBox(
-        width: widget.state.windowConstraints!.maxWidth,
-        height: widget.state.windowConstraints!.maxHeight,
-        child: RepaintBoundary(
-          child: CustomPaint(
-            painter: CrosshairPainter(widget.state),
-            )
-          ),
-      )
-    );
-  }
 
+    return Padding(
+      padding: EdgeInsets.only(
+        left: widget.state.sidePadding, 
+        bottom: widget.state.overPadding,
+        right: widget.state.sidePadding,
+        top: widget.state.overPadding
+        ),
+      child: LayoutBuilder(
 
-  void _onPanStart(DragStartDetails details) {
-    for (Graph graph in widget.state.widget.graphs) {
-      if (graph.crosshair == null) {
-        continue;
-      }
-      if (!graph.crosshair!.active) { 
-        continue;
-      }
+        builder: (_, windowConstraints) {
 
-      double? x = widget.state._getXValueFromPixel(details.globalPosition.dx);
+          widget.state.init(windowConstraints);
 
-      if (x != null) {
+          return Consumer(builder: (context, ref, child) {
 
-        graph.crosshair?.x = x;
+            ref.watch(plotRepainter);
 
-      }
-      
-
-      }
-
-
-
+            return Listener(
+                onPointerDown: (event) {
+                  _handlePointerDown(event, ref);
+                },
+                onPointerMove: (event) {
+                  _handlePointerMove(event, ref);
+                },
+                onPointerSignal: (event) {
+                  if (event is PointerScrollEvent) { 
+                    _handleMouseScroll(event.scrollDelta.dy, ref);
+                  }
+                },
+                onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
+                  _handleMouseScroll(event.panDelta.dy, ref);
+                },
+                child: Stack(
+                    children: [
+                      SizedBox(
+                        width: windowConstraints.maxWidth,
+                        height: windowConstraints.maxHeight,
+                        child: RepaintBoundary(
+                          child: CustomPaint(
+                            painter: BackgroundPainter(state: widget.state),
+                            )
+                          ),
+                      ),
+                      SizedBox(
+                          width: windowConstraints.maxWidth,
+                          height: windowConstraints.maxHeight,
+                          child: RepaintBoundary(
+                            child: CustomPaint(
+                              painter: GraphPainter(state: widget.state),
+                              )
+                            ),
+                      ),
+                      Consumer(builder: (context, crosshairRef, child) {
+                        crosshairRef.watch(crosshairRepainter);
+                        return SizedBox(
+                          width: windowConstraints.maxWidth,
+                          height: windowConstraints.maxHeight,
+                          child: RepaintBoundary(
+                            child: CustomPaint(
+                              painter: CrosshairPainter(state: widget.state),
+                              )
+                            ),
+                        );
+                      }),
+                      // Consumer(builder: (context, annotationRef, child) {
+                      //   annotationRef.watch(annotationsRepainter);
+                      //   return SizedBox(
+                      //     width: windowConstraints.maxWidth,
+                      //     height: windowConstraints.maxHeight,
+                      //     child: RepaintBoundary(
+                      //       child: CustomPaint(
+                      //         painter: AnnotationPainter(state: widget.state),
+                      //       )
+                      //     ),
+                      //   );
+                        
+                      // },),
+                      SizedBox(
+                          width: windowConstraints.maxWidth,
+                          height: windowConstraints.maxHeight,
+                          child:  AnnotationLayer(state: widget.state,),
+                      ),
+                    ]
+                )
+              );  
+            });
+          }
+        )
+      );
     }
-
-  void _onPanUpdate(DragUpdateDetails details) {
-    
-    for (Graph graph in widget.state.widget.graphs) {
-
-      if (graph.crosshair == null) {
-        continue;
-      }
-      if (!graph.crosshair!.active) { 
-        continue;
-      }
-      
-      int i = widget.state._getXIndexFromPixel(graph, details.globalPosition.dx, details.delta, graph.crosshair!.prevIndex);
-
-          
-      setState(() {
-
-        graph.crosshair?.x = graph.X[i];
-        graph.crosshair?.prevIndex = i;
- 
-      });
-      
-
-    }
-  
-  }
-
-  void _onPanEnd(DragEndDetails details) {
-    
   }
 
 
-}
+
     
 
 
-class _Scaler {
-
-
-  double _pxMin = 0;
-  double _min = 0;
-  double _s = 0;
-
-
-  void setScaling(double min, double max, double pxMin, double pxMax) {
-  
-    _min = min;
-    _pxMin = pxMin;
-    _s = (pxMax - pxMin) / (max - min);
-
-  }
-
-
-  double scale(double val) {
-
-      return (val -_min) * _s + _pxMin;
-
-  }
-
-  double inverse(double val) {
-
-      return (val - _pxMin) * (1/_s) + _min;
-    
-  }
 
 
 
-}

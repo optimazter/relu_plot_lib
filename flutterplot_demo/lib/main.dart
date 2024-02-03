@@ -1,8 +1,6 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -39,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
   double f1(num x) {
-    return pow(x,2) + 7 * x - 3000;
+    return x * sin(pi / 5 * x);
   }
 
   double f2(num x) {
@@ -51,12 +49,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
 
     List<double> X = [];
-    List<double> Y1 = [];
-    List<double> Y2 = [];
-    for (int i = -50000; i < 50000; i++) {
+    List<double> y1 = [];
+    for (int i = 0; i < 1000; i++) {
       X.add(i.toDouble());
-      Y1.add(f1(i));
-      Y2.add(f2(i));
+      y1.add(f1(i));
     }
 
     return Scaffold(
@@ -67,13 +63,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Plot(
-          padding: 50,
+          padding: 30,
+          xUnit: 'Hz',
+          yUnit: 'dB',
           graphs: [
             Graph(
               X: X, 
-              Y: Y1,
+              Y: y1,
               color: Colors.blue,
               crosshair: Crosshair(label: 'Test1', active: true, yPadding: 10),
+              annotations: [Annotation(child: Text("Test"))]
             ),
             // Graph(
             //   X: X, 
