@@ -1,13 +1,10 @@
 
 import 'dart:math';
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/annotation.dart';
 
-
-final crosshairRepainter = StateProvider<int>((ref) => 0);
-final plotRepainter = StateProvider<int>((ref) => 0);
 
 
 enum Interaction {
@@ -16,85 +13,136 @@ enum Interaction {
   annotation
 } 
 
-class PlotStateManager {
 
-  PlotStateManager({
-    required this.plot
-  });
+class PlotState  {
+  PlotState({required this.plot}) {
+    _init();
+  }
 
   final Plot plot;
 
   final xScaler = Scaler();
   final yScaler = Scaler();
 
-  BoxConstraints? windowConstraints;
-  PlotConstraints? plotConstraints;
-  PlotConstraints? plotExtremes;
-
+  BoxConstraints windowConstraints = BoxConstraints();
+  late PlotConstraints plotConstraints;
+  late PlotConstraints plotExtremes;
 
   final Map<Offset, RenderPoint> pixelLUT = {};
-  final Map<String, double> xTicks = {};
-  final Map<String, double>  yTicks = {};
+  final Map<Graph, List<RenderPoint>> graphRenderPoints = {};
+  final Map<String, double> _xTicks = {};
+  final Map<String, double>  _yTicks = {};
+  final Map<double, String> xCrosshairLabels = {};
+  final Map<double, String> yCrosshairLabels = {};
+
 
   List<Annotation> annotations = [];
 
-  List<RenderPoint> renderPoints = [];
 
   double get sidePadding => plot.padding + 40;
   double get overPadding => plot.padding;
 
+
+  double get xMovementScalar => (plotConstraints.xMax - plotConstraints.xMin).abs() / windowConstraints.maxWidth;
+  double get yMovementScalar => (plotConstraints.yMax - plotConstraints.yMin).abs() / windowConstraints.maxHeight;
+
+  ValueNotifier<int> crosshairState = ValueNotifier(0);
+
+  int decimate = 0;
+
+
+  void debugLog(String message) {
+    debugPrint('FlutterPlot: $message');
+  }
+
+
+
+  Map<String, double> get xTicks {
+    Map<String, double> filteredTicks = {};
+    _xTicks.forEach((key, val) {
+      if (val > 0 && val < windowConstraints.maxWidth) {
+        filteredTicks[key] = val;
+      }
+    });
+    return filteredTicks;
+  }
+
+  Map<String, double> get yTicks {
+    Map<String, double> filteredTicks = {};
+    _yTicks.forEach((key, val) {
+      if (val > 0 && val < windowConstraints.maxHeight) {
+        filteredTicks[key] = val;
+      }
+    });
+    return filteredTicks;
+  }
+
   Interaction currentInteraction = Interaction.crosshair;
 
+  int calculateDecimate() {
+    var display = WidgetsBinding.instance.platformDispatcher.views.first.display;
+    debugLog('Measured Refresh Rate was ${display.refreshRate} Hz');
+    return display.refreshRate ~/ 10;
+  }
 
 
   void moveActiveCrosshairs(PointerMoveEvent event) {
     
     for (Graph graph in plot.graphs) {
 
-      if (graph.crosshair == null) {
+      if (graph.crosshairs == null) {
         continue;
       }
-      if (!graph.crosshair!.active) { 
-        continue;
-      }
-      
-      int? i = _getXIndexFromPixel(graph, event.position.dx, event.delta.dx, graph.crosshair!.prevIndex);
-      
-      if (i != null) {
 
-        graph.crosshair!.value =  Offset(graph.X[i], graph.Y[i]);
-        graph.crosshair!.prevIndex = i;  
+      for (Crosshair crosshair in graph.crosshairs!) {
 
+        if (!crosshair.active) { 
+          continue;
+        }
+        
+        int? i = _getXIndexFromPixel(graph, event.localPosition.dx, event.localDelta.dx, crosshair.prevIndex);
+        
+        if (i != null) {
+
+          crosshair.value =  Offset(graph.X[i], graph.Y[i]);
+          crosshair.prevIndex = i;  
+
+        }
       }
     }
   }
 
 
+  bool isWithinPlotPixels(Offset pixel) => pixel.dx >= 0 && pixel.dx <= windowConstraints.maxWidth && pixel.dy >= 0 && pixel.dy <= windowConstraints.minWidth;
 
-  bool isWithinPlotPixels(Offset pixel) => pixel.dx >= 0 && pixel.dx <= windowConstraints!.maxWidth && pixel.dy >= 0 && pixel.dy <= windowConstraints!.minWidth;
 
-
-  bool isWithinPlotValues(Offset value) => value.dx >= plotConstraints!.xMin && value.dx <= plotConstraints!.xMax && value.dy >= plotConstraints!.yMin && value.dy <= plotConstraints!.yMax;
+  bool isWithinPlotValues(Offset value) => value.dx >= plotConstraints.xMin && value.dx <= plotConstraints.xMax && value.dy >= plotConstraints.yMin && value.dy <= plotConstraints.yMax;
 
 
 
   void movePlot(Offset moveDelta) {
 
-    plotConstraints!.xMin -= moveDelta.dx;
-    plotConstraints!.xMax -= moveDelta.dx;
-    plotConstraints!.yMin += moveDelta.dy;
-    plotConstraints!.yMax += moveDelta.dy;
+    var xMovement = moveDelta.dx * xMovementScalar;
+    var yMovement = moveDelta.dy * yMovementScalar;
+
+    plotConstraints.xMin -= xMovement;
+    plotConstraints.xMax -= xMovement;
+    plotConstraints.yMin += yMovement;
+    plotConstraints.yMax += yMovement;
+
 
   }
 
 
   bool setXConstraints(double scrollDelta) {
 
-    final double newXMin = plotConstraints!.xMin += scrollDelta;
-    final double newXMax = plotConstraints!.xMax -= scrollDelta;
-    if (newXMin < newXMax && newXMax > plotExtremes!.xMin) {
-      plotConstraints!.xMin = newXMin;
-      plotConstraints!.xMax = newXMax;
+    final xMovement = scrollDelta * xMovementScalar;
+
+    final double newXMin = plotConstraints.xMin += xMovement;
+    final double newXMax = plotConstraints.xMax -= xMovement;
+    if (newXMin < newXMax && newXMax > plotExtremes.xMin) {
+      plotConstraints.xMin = newXMin;
+      plotConstraints.xMax = newXMax;
       return true;
     }
     return false;
@@ -102,27 +150,30 @@ class PlotStateManager {
 
   bool setYConstraints(double scrollDelta) {
 
-    final double newYMin = plotConstraints!.yMin -= scrollDelta;
-    final double newYMax = plotConstraints!.yMax += scrollDelta;
+    final yMovement = scrollDelta * yMovementScalar; 
 
-    if (newYMin < newYMax && newYMax > plotExtremes!.yMin) {
-      plotConstraints!.yMin = newYMin;
-      plotConstraints!.yMax = newYMax;
+    final double newYMin = plotConstraints.yMin += yMovement;
+    final double newYMax = plotConstraints.yMax -= yMovement;
+
+    if (newYMin < newYMax && newYMax > plotExtremes.yMin) {
+      plotConstraints.yMin = newYMin;
+      plotConstraints.yMax = newYMax;
       return true;
     }
     return false;
   }
 
+
   int? _getXIndexFromPixel(Graph graph, double pxX,  double dx, int prevIndex) {
     double x = xScaler.inverse(pxX);
-    if (pxX <= 0) {
+    if (x <= plotExtremes.xMin) {
       return 0;
     }
-    if (pxX >= windowConstraints!.maxWidth) {
+    if (x >= plotExtremes.xMax) {
       return graph.X.length - 1;
     }
     if (dx < 0) {
-      for (int i = prevIndex - 1; i > 1; i --) {
+      for (int i = prevIndex - 1; i > 0; i --) {
         if (graph.X[i - 1] <= x && x <= graph.X[i + 1]) {
           return i;
         }
@@ -138,94 +189,173 @@ class PlotStateManager {
 
   }
 
+
   void initXTicks() {
+    _xTicks.clear();
     final ticks = plot.xTicks ?? _getXTicks();
-    ticks.forEach((x) {
-        xTicks['${x.toStringAsFixed(plot.fractionDigits)} ${plot.xUnit ?? ''}'] = xScaler.scale(x);
-      });
+    bool toLog = plot.xTicks != null;
+    _initTicks(ticks, _xTicks, xScaler, plot.xUnit ?? '', plot.xLog, toLog, false);
   }
 
   void initYTicks() {
+    _yTicks.clear();
     final ticks = plot.yTicks ?? _getYTicks();
-    ticks.forEach((y) {
-        yTicks['${y.toStringAsFixed(plot.fractionDigits)} ${plot.yUnit ?? ''}'] = yScaler.scale(y);
-      });
+    bool toLog = plot.yTicks != null;
+    _initTicks(ticks, _yTicks, yScaler, plot.yUnit ?? '', plot.yLog, toLog, true);
+
   }
+
+  String toLogarithmicLabel(num valPow, String unit) {
+    switch (valPow) {
+      case >= 1e12:
+        return '${(valPow / 1e12).toStringAsFixed(plot.ticksFractionDigits)} T${unit}';
+      case >= 1e9:
+        return '${(valPow / 1e9).toStringAsFixed(plot.ticksFractionDigits)} G${unit}';
+      case >= 1e6:
+        return '${(valPow / 1e6).toStringAsFixed(plot.ticksFractionDigits)} M${unit}';
+      case >= 1e3:
+        return '${(valPow / 1e3).toStringAsFixed(plot.ticksFractionDigits)} K${unit}';
+      default:
+        return '${valPow.toStringAsFixed(plot.ticksFractionDigits)} ${unit}';
+    }
+
+  }
+
+  void _initTicks(List<double> ticks, Map<String, double> labels, Scaler scaler, String unit, bool isLog, bool toLog, bool y) {
+    for (int i = 0; i < ticks.length; i++) {
+      String label;
+      double val = ticks[i];
+      if (isLog) {
+        num valPow;
+        if (toLog) {
+          valPow = val;
+          val = log(val) / ln10;
+        } else {
+          valPow = pow(e, val*ln10);
+        }
+        label = toLogarithmicLabel(valPow, unit);
+      } else {
+        label = '${val.toStringAsFixed(plot.ticksFractionDigits)} ${unit}';
+      }
+      if (y) {
+        labels[label] = windowConstraints.maxHeight - scaler.scale(val);
+      } else {
+        labels[label] = scaler.scale(val);
+      }
+    }
+  }
+
 
   List<double> _getXTicks() {
     int n = plot.numXTicks ?? 10;
     n += 1;
-    final List<double> x = [];
+    final List<double> xTicks = [];
     for (int i = 1; i < n; i++) {
-
-      x.add(plotConstraints!.xMin + (i) * (plotConstraints!.xMax - plotConstraints!.xMin) / n);
-
+      double x = plotConstraints.xMin + (i) * (plotConstraints.xMax - plotConstraints.xMin) / n;
+      xTicks.add(x);
     }
-    return x;
-
+    return xTicks;
   }
 
   List<double> _getYTicks() {
     int n = plot.numYTicks ?? 10;
     n += 1;
-    final List<double> y = [];
+    final List<double> yTicks = [];
     for (int i = 1; i < n; i++) {
-      y.add(plotConstraints!.yMin + (i) * (plotConstraints!.yMax - plotConstraints!.yMin) / n);
+      double y = plotConstraints.yMin + (i) * (plotConstraints.yMax - plotConstraints.yMin) / n;
+      yTicks.add(y);
     }
-    return y;
+    return yTicks;
   }
 
-  Offset getValueFromPixel(Offset pixel) => Offset(xScaler.inverse(pixel.dx), yScaler.inverse(windowConstraints!.maxHeight - pixel.dy));
+  Offset getValueFromPixel(Offset pixel) => Offset(xScaler.inverse(pixel.dx), yScaler.inverse(windowConstraints.maxHeight - pixel.dy));
 
-  Offset getPixelFromValue(Offset value) => Offset(xScaler.scale(value.dx), windowConstraints!.maxHeight - yScaler.scale(value.dy));
+  Offset getPixelFromValue(Offset value) => Offset(xScaler.scale(value.dx), windowConstraints.maxHeight - yScaler.scale(value.dy));
 
 
-  void repaintCrosshairs(WidgetRef ref) {
-    ref.read(crosshairRepainter.notifier).state++;
-  }
 
-  void repaintPlot(WidgetRef ref) {
-    ref.read(plotRepainter.notifier).state++;
-  }
+  void resizePlot( [bool xOnly = false, bool yOnly = false]) {
 
-  void resize([bool xOnly = false, bool yOnly = false]) {
-
-    debugPrint('Resize');
+    debugLog('Resizing Plot');
 
     if (!yOnly) {
-     xScaler.setScaling(plotConstraints!.xMin, plotConstraints!.xMax, 0, windowConstraints!.maxWidth);
+     xScaler.setScaling(plotConstraints.xMin, plotConstraints.xMax, 0, windowConstraints.maxWidth);
     }
     if (!xOnly) {
-     yScaler.setScaling(plotConstraints!.yMin, plotConstraints!.yMax, 0, windowConstraints!.maxHeight);
+     yScaler.setScaling(plotConstraints.yMin, plotConstraints.yMax, 0, windowConstraints.maxHeight);
     }
+
 
     pixelLUT.forEach((value, point) {
 
-      point.pixel = Offset(xScaler.scale(value.dx), windowConstraints!.maxHeight - yScaler.scale(value.dy));
+      point.pixel = Offset(xScaler.scale(value.dx), windowConstraints.maxHeight - yScaler.scale(value.dy));
 
     });
 
-    renderPoints = pixelLUT.values.where((pt) => pt.pixel.dx >= 0 &&
-                                                  pt.pixel.dx <= windowConstraints!.maxWidth)
+    graphRenderPoints.forEach((graph, points) {
+    
+      points = points.where((pt) => pt.pixel.dx >= 0 &&
+                                                  pt.pixel.dx <= windowConstraints.maxWidth)
                                                   .toList();
-    if (plot.xTicks == null) {
-      xTicks.clear();
-      initXTicks();
-    }
-    if (plot.yTicks == null) {
-      yTicks.clear();
-      initYTicks();
+    });
+
+    initXTicks();
+    initYTicks();
+
+    if (plot.onResize != null) {
+      plot.onResize!(plotConstraints);
     }
 
+
+  }
+
+  void initCrosshairLabels(Map<double, String> labels, List<double> vals, bool toLog) {
+    for (int i = 0; i < vals.length; i++) {
+      double val = vals[i];
+      if (toLog) {
+        labels[val] = pow(e, val * ln10).toStringAsFixed(plot.crosshairFractionDigits);
+      } else {
+        labels[val] = val.toStringAsFixed(plot.crosshairFractionDigits);
+      }
+    }
+  }
+
+  void resizeWindow(BoxConstraints windowConstraints) {
+
+    debugLog('Resizing Window');
+
+    this.windowConstraints = windowConstraints;
+    resizePlot();
+
+    // xScaler.setScaling(plotConstraints.xMin, plotConstraints.xMax, 0, windowConstraints.maxWidth);
+    // yScaler.setScaling(plotConstraints.yMin, plotConstraints.yMax, 0, windowConstraints.maxHeight);
+
+    // for (Graph graph in plot.graphs) {
+    //   graphRenderPoints[graph] = [];
+
+    //   for (int i = 0; i < graph.X.length; i++) {
+
+    //     double pxX = xScaler.scale(graph.X[i]);
+    //     double pxY = yScaler.scale(graph.Y[i]);
+
+    //     pixelLUT[Offset(graph.X[i], graph.Y[i])]!.pixel = Offset(pxX, windowConstraints.maxHeight - pxY);
+    //     graphRenderPoints[graph]!.add(pixelLUT[Offset(graph.X[i], graph.Y[i])]!);
+        
+    //   }
+    // }
+
+    // initXTicks();
+    // initYTicks();
   }
 
 
 
-  void init(BoxConstraints windowConstraints) {
+  void _init() {
 
-    debugPrint('Initializing');
+    debugLog('Initializing Plot');
+    disposeValues();
 
-    this.windowConstraints = windowConstraints;
+    decimate = plot.decimate ?? calculateDecimate();
 
     double xMin = double.infinity;
     double xMax = double.negativeInfinity;
@@ -233,6 +363,11 @@ class PlotStateManager {
     double yMax = double.negativeInfinity;
 
     for (Graph graph in plot.graphs) {
+
+      graph.init(xLog: plot.xLog, yLog: plot.yLog);
+
+      initCrosshairLabels(xCrosshairLabels, graph.X, plot.xLog);
+      initCrosshairLabels(yCrosshairLabels, graph.Y, plot.yLog);
 
       xMin = min(xMin, graph.X.reduce(min));
       xMax = max(xMax, graph.X.reduce(max));
@@ -242,54 +377,75 @@ class PlotStateManager {
 
     }
 
-    xScaler.setScaling(xMin, xMax, 0, windowConstraints.maxWidth);
-    yScaler.setScaling(yMin, yMax, 0, windowConstraints.maxHeight);
+    xScaler.setScaling(xMin, xMax, 0, 1);
+    yScaler.setScaling(yMin, yMax, 0, 1);
 
+    plotExtremes = PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
+
+
+    plotConstraints = plot.constraints ?? PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
+
+
+
+    initXTicks();
+    initYTicks();
 
     for (int j = 0; j < plot.graphs.length; j++) {
 
       var graph = plot.graphs[j];
-
       var graphPaint = Paint()..color = graph.color ?? Colors.black..strokeWidth = graph.linethickness ?? 1;
+
+      graphRenderPoints[graph] = [];
 
       for (int i = 0; i < graph.X.length; i++) {
 
         double pxX = xScaler.scale(graph.X[i]);
         double pxY = yScaler.scale(graph.Y[i]);
 
-        pixelLUT[Offset(graph.X[i], graph.Y[i])] = RenderPoint(
+        var renderPoint = RenderPoint(
                                   pixel: Offset(pxX, windowConstraints.maxHeight - pxY),
                                   paint: graphPaint,
                                   id: i * j
           );
+
+        pixelLUT[Offset(graph.X[i], graph.Y[i])] = renderPoint;
+        graphRenderPoints[graph]!.add(renderPoint);
       }
-      renderPoints = pixelLUT.values.toList();
-      plotExtremes = PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
-      plotConstraints = PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
-      initXTicks();
-      initYTicks();
+      
       
       if (graph.annotations != null) {
         graph.annotations!.forEach((annotation) {
-          if (annotation.value == null) {
-            annotation.value = Offset(xMax / 2, xMin / 2);
+          if (annotation.position == null) {
+            int index = graph.X.length ~/ 2;
+            annotation.position = Offset(graph.X[index], graph.Y[index]);
           }
           annotations.add(annotation);
         });
       }
 
-      if (graph.crosshair != null) {
+      if (graph.crosshairs != null) {
 
-        int index = graph.X.length ~/ 2;
-        graph.crosshair?.prevIndex = index;
-        graph.crosshair?.value = Offset(graph.X[index], graph.Y[index]);
-        
-
+        graph.crosshairs!.forEach((crosshair) {
+          if (crosshair.value == null) {
+            int index = graph.X.length ~/ 2;
+            crosshair.prevIndex = index;
+            crosshair.value = Offset(graph.X[index], graph.Y[index]);
+          }
+         });
       }
+    }
 
   }
 
+  void disposeValues() {
+    pixelLUT.clear();
+    graphRenderPoints.clear();
+    _xTicks.clear();
+    _yTicks.clear();
+    xCrosshairLabels.clear();
+    yCrosshairLabels.clear();
   }
+
 }
 
 class Scaler {
@@ -313,6 +469,14 @@ class Scaler {
   double inverse(double val) {
       return (val - _pxMin) * (1/_s) + _min;
   }
+
+  @override
+  bool operator ==(covariant Scaler other) {
+    return other._pxMin == _pxMin && other._min == _min && other._s == _s;
+  }
+
+  @override
+  int get hashCode => _s.hashCode;
 
 
 }
@@ -357,7 +521,15 @@ class PlotConstraints {
   double yMin;
   double yMax;
 
+  bool get isFinite => xMin.isFinite && xMax.isFinite && yMin.isFinite && yMax.isFinite;
 
 
+  @override
+  bool operator ==(covariant PlotConstraints other) {
+    return other.xMin == xMin && other.xMax == xMax && other.yMin == yMin && other.yMax == yMax;
+  }
+
+  @override
+  int get hashCode => xMin.hashCode;
 
 }

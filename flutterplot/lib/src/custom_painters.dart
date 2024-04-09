@@ -3,6 +3,7 @@ import 'package:flutterplot/flutterplot.dart';
 import 'package:flutterplot/src/provider.dart';
 
 
+
 class BackgroundPainter extends CustomPainter {
 
   const BackgroundPainter({
@@ -10,20 +11,20 @@ class BackgroundPainter extends CustomPainter {
 
   });
 
-  final PlotStateManager state;
+  final PlotState state;
 
   
   @override
   void paint(Canvas canvas, Size size) {
 
-    debugPrint('Repainting Static Background');
+    state.debugLog('Repainting Static Background');
 
     final primaryLinePaint = Paint()..color = Colors.black..strokeWidth = 2;
     final secondaryLinePaint = Paint()..color = Colors.black..strokeWidth = 0.8;
     final linePaint = Paint()..color = const Color.fromARGB(210, 87, 85, 85)..strokeWidth = 1;
     final textPainter = TextPainter(textDirection: TextDirection.ltr,);
 
-    _paintBorders(canvas, state.windowConstraints!.maxWidth, state.windowConstraints!.maxHeight, primaryLinePaint, secondaryLinePaint);
+    _paintBorders(canvas, state.windowConstraints.maxWidth, state.windowConstraints.maxHeight, primaryLinePaint, secondaryLinePaint);
     _paintGridLines(canvas, state.xTicks, state.yTicks, linePaint, textPainter);
 
 
@@ -31,36 +32,38 @@ class BackgroundPainter extends CustomPainter {
 
   void _paintBorders(Canvas canvas, double width, double height, Paint primaryLinePaint, Paint secondaryLinePaint) {
 
-    canvas.drawLine(Offset(0, height), Offset.zero, primaryLinePaint);
-    canvas.drawLine(Offset(0, state.windowConstraints!.maxHeight), Offset(width, height), primaryLinePaint);
+    //canvas.clipRect(Rect.fromLTRB(0, 0, state.windowConstraints!.maxWidth + state.sidePadding, state.windowConstraints!.maxHeight + state.overPadding));
 
-    canvas.drawLine(Offset(width, height), Offset(state.windowConstraints!.maxWidth, 0), secondaryLinePaint);
+    canvas.drawLine(Offset(0, height), Offset.zero, primaryLinePaint);
+    canvas.drawLine(Offset(0, state.windowConstraints.maxHeight), Offset(width, height), primaryLinePaint);
+
+    canvas.drawLine(Offset(width, height), Offset(state.windowConstraints.maxWidth, 0), secondaryLinePaint);
     canvas.drawLine(Offset.zero, Offset(width, 0), secondaryLinePaint);
   }
 
   void _paintGridLines(Canvas canvas,  Map<String, double> xTicks, Map<String, double> yTicks, Paint linePaint, TextPainter textPainter) {
 
     xTicks.forEach((key, value) {
-      canvas.drawLine(Offset(value, 0), Offset(value, state.windowConstraints!.maxHeight), linePaint);
+      canvas.drawLine(Offset(value, 0), Offset(value, state.windowConstraints.maxHeight), linePaint);
       textPainter.text = TextSpan(
           style: const TextStyle(color: Colors.black), 
           text: key,
       );
       textPainter.layout(
           minWidth: 0,
-          maxWidth: state.windowConstraints!.maxWidth / xTicks.length,
+          maxWidth: state.windowConstraints.maxWidth / xTicks.length,
         );
-      textPainter.paint(canvas, Offset(value, state.windowConstraints!.maxHeight));
+      textPainter.paint(canvas, Offset(value, state.windowConstraints.maxHeight));
     });
     yTicks.forEach((key, value) {
-      canvas.drawLine(Offset(0, value), Offset(state.windowConstraints!.maxWidth, value), linePaint);
+      canvas.drawLine(Offset(0, value), Offset(state.windowConstraints.maxWidth, value), linePaint);
       textPainter.text = TextSpan(
           style: const TextStyle(color: Colors.black), 
           text: key,
       );
       textPainter.layout(
           minWidth: 0,
-          maxWidth: state.windowConstraints!.maxWidth / xTicks.length,
+          maxWidth: state.windowConstraints.maxWidth / xTicks.length,
         );
       textPainter.paint(canvas, Offset(-state.sidePadding + 5, value));
     });
@@ -68,7 +71,7 @@ class BackgroundPainter extends CustomPainter {
   }
   
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(covariant BackgroundPainter oldDelegate) {
     return true;
   }
 
@@ -82,18 +85,19 @@ class GraphPainter extends CustomPainter {
 
   });
 
-  final PlotStateManager state;
+  final PlotState state;
 
   
   @override
   void paint(Canvas canvas, Size size) {
 
-    debugPrint('Repainting Graphs');
+    state.debugLog('Repainting Graphs');
 
-    canvas.clipRect(Rect.fromLTRB(0, 0, state.windowConstraints!.maxWidth, state.windowConstraints!.maxHeight));
+    canvas.clipRect(Rect.fromLTRB(0, 0, state.windowConstraints.maxWidth, state.windowConstraints.maxHeight));
 
-    _paintGraphs(canvas, state.renderPoints);
-
+    state.graphRenderPoints.forEach((key, values) {
+        _paintGraphs(canvas, values);
+    },);
 
   }
 
@@ -113,7 +117,7 @@ class GraphPainter extends CustomPainter {
 
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(covariant GraphPainter oldDelegate) {
 
     return true;
 
@@ -129,38 +133,39 @@ class CrosshairPainter extends CustomPainter {
     required this.state
     });
 
-  final PlotStateManager state;
+  final PlotState state;
 
 
   @override
   void paint(Canvas canvas, Size size) {
 
-    debugPrint('Repainting Crosshairs');
+    state.debugLog('Repainting Crosshairs');
 
     final crosshairLinePaint = Paint();
     final crosshairBoxPaint = Paint();
     final textPainter = TextPainter(textDirection: TextDirection.ltr,);
     
-    canvas.clipRect(Rect.fromLTRB(-state.sidePadding, 0, state.windowConstraints!.maxWidth + state.sidePadding, state.windowConstraints!.maxHeight));
+    canvas.clipRect(Rect.fromLTRB(-state.sidePadding, 0, state.windowConstraints.maxWidth + state.sidePadding, state.windowConstraints.maxHeight));
 
     state.plot.graphs.forEach((graph) {
 
-      if (graph.crosshair != null) {
-        crosshairLinePaint..color = Colors.black..strokeWidth = 1.3;
-        crosshairBoxPaint..color = graph.color??Colors.black..style = PaintingStyle.fill;
+      if (graph.crosshairs != null) {
 
-  
-        _paintCrosshair(
-          canvas, 
-          graph.crosshair!,
-          crosshairLinePaint, 
-          crosshairBoxPaint, 
-          textPainter
-          );
+        graph.crosshairs!.forEach((crosshair) { 
+          crosshairLinePaint..color = Colors.black..strokeWidth = 1.3;
+          crosshairBoxPaint..color = crosshair.color??Colors.black..style = PaintingStyle.fill;
 
-        }
-      });
-
+    
+          _paintCrosshair(
+            canvas, 
+            crosshair,
+            crosshairLinePaint, 
+            crosshairBoxPaint, 
+            textPainter
+            );
+        });
+      }
+    });
   }
   
 
@@ -170,15 +175,17 @@ class CrosshairPainter extends CustomPainter {
 
       textPainter.text = TextSpan(
           style: const TextStyle(color: Colors.white), 
-          text: 'x: ${(crosshair.value!.dx).toStringAsFixed(2)} \ny: ${(crosshair.value!.dy).toStringAsFixed(2)}');
+          text: ' ${crosshair.label}\n  x: ${state.xCrosshairLabels[crosshair.value!.dx]} \n  y: ${state.yCrosshairLabels[crosshair.value!.dy]}');
         textPainter.layout(
               minWidth: 0,
               maxWidth: crosshair.width,
             );
 
-      canvas.drawLine(Offset(0, pixelPosition.dy), Offset(state.windowConstraints!.maxWidth, pixelPosition.dy), linePaint);
+      canvas.drawLine(Offset(0, pixelPosition.dy), Offset(state.windowConstraints.maxWidth, pixelPosition.dy), linePaint);
 
-      canvas.drawLine(Offset(pixelPosition.dx, state.windowConstraints!.maxHeight), Offset(pixelPosition.dx, 0), linePaint);
+      canvas.drawLine(Offset(pixelPosition.dx, state.windowConstraints.maxHeight), Offset(pixelPosition.dx, 0), linePaint);
+
+      canvas.drawCircle(pixelPosition, 5, boxPaint);
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
@@ -195,7 +202,7 @@ class CrosshairPainter extends CustomPainter {
 
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(covariant CrosshairPainter oldDelegate) {
 
     return true;
 
@@ -203,72 +210,6 @@ class CrosshairPainter extends CustomPainter {
 
 
 }
-
-
-// class AnnotationPainter extends CustomPainter {
-
-//   const AnnotationPainter({
-
-//     required this.state
-
-//   });
-//   final PlotStateManager state;
-
-
-//   @override
-//   void paint(Canvas canvas, Size size) {
-
-//     final boxPaint = Paint();
-//     final textPainter = TextPainter(textDirection: TextDirection.ltr,);
-
-//     canvas.clipRect(Rect.fromLTRB(0, 0, state.windowConstraints!.maxWidth, state.windowConstraints!.maxHeight));
-
-//     state.plot.graphs.forEach((graph) {
-//       if (graph.annotations != null) {
-//         boxPaint.color = graph.color ?? Color.fromARGB(195, 4, 78, 138);
-//         graph.annotations!.forEach((annotation) {
-//           _paintAnnotation(canvas, annotation, boxPaint, textPainter);
-//         });
-//       }
-
-//     });
-
-    
-//   }
-
-
-//   void _paintAnnotation(Canvas canvas, Annotation annotation, Paint boxPaint, TextPainter textPainter) {
-
-
-//     textPainter.text = TextSpan(
-//           style: const TextStyle(color: Colors.white), 
-//           text: annotation.text,
-//     );
-
-//     textPainter.layout(
-//                 minWidth: 0,
-//                 maxWidth: annotation.width,
-//     );
-
-//     canvas.drawRRect(
-//         RRect.fromRectAndRadius(
-//           Rect.fromCenter(center: state.getPixelFromValue(annotation.value!).translate(-annotation.width / 2, -annotation.height / 2 ), 
-//             width: annotation.width, 
-//             height: annotation.height), 
-//           const Radius.circular(8)), boxPaint);
- 
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-
-//     return true;
-
-//   }
-
-
-
-// }
 
 
 

@@ -1,116 +1,84 @@
 
+import 'dart:collection';
 import 'dart:math';
 import 'dart:ui';
+import 'package:flutter/widgets.dart';
 import 'package:flutterplot/flutterplot.dart';
+
+/// A graph which can be painted in a FlutterPlot [Plot] object
+/// 
+/// The graph painted must be specified by the [x] and [y] parameters.
+/// Note that [x] and [y] must be of equal length.
 
 class Graph {
 
   Graph( {
-    required this.X, 
-    required this.Y,
+    required x, 
+    required y,
     this.color,
     this.linethickness,
-    this.numHorizontalGridLines,
     this.annotations,
-    this.crosshair, 
-  }
-) {
-  _initValues();
-}
+    this.crosshairs, 
+    }
+  ) : _xUnmodified = x, _yUnmodified = y;
 
-  final List<double> X;
-  final List<double> Y;
+  /// The x coordinates of the graph.
+  final List<num> _xUnmodified;
+
+  /// The y coordinates of the graph.
+  final List<num> _yUnmodified;
+
+  /// The color of the graph.
   final Color? color;
+
+  /// The linethickness of the graph.
   final double? linethickness;
-  final double? numHorizontalGridLines;
+
+  /// The Annotations which will be attached to this graph.
   final List<Annotation>? annotations;
-  final Crosshair? crosshair;
+
+  /// The Crosshairs which will be attached to this graph.
+  final List<Crosshair>? crosshairs;
 
 
-  late final Map<double, double> mapXToY = Map.fromIterables(X, Y);
-  late final Map<double, double> mapYToX = Map.fromIterables(Y, X);
+  final List<double> _x = [];
+  final List<double> _y = [];
 
-  late final double xMax;
-  late final double xMin;
-  late final double yMax;
-  late final double yMin;
+  UnmodifiableListView<double> get X => UnmodifiableListView(_x);
+  UnmodifiableListView<double> get Y => UnmodifiableListView(_y);
 
-  late double _lowerXConstraints;
-  late double _upperXConstraints;
-  late double _lowerYConstraints;
-  late double _upperYConstraints;
 
-  List<double> xToPaint = [];
-  List<double> yToPaint = [];
-
-  double get lowerXConstraints => _lowerXConstraints;
-  double get upperXConstraints => _upperXConstraints;
-  double get lowerYConstraints => _lowerYConstraints;
-  double get upperYConstraints => _upperYConstraints;
-  
-  void setXConstraints(double lower, double upper) {
-    print(lower);
-    _lowerXConstraints = lower;
-    _upperXConstraints = upper;
-    xToPaint = _xToPaint;
-    yToPaint = _yToPaint;
+  /// Initializes the graph in either the log space or as is.
+  void init({bool xLog = false, bool yLog = false}) {
+    if (_x.length != _xUnmodified.length) {
+      if (xLog) {
+        _x.addAll(_xUnmodified.map((x) => log(x) / ln10));
+      } else {
+        _x.addAll(_xUnmodified.map((x) => x.toDouble()));
+      }
+    }
+    if (_y.length != _yUnmodified.length) {
+      if (yLog) {
+        _y.addAll(_yUnmodified.map((y) => log(y) / ln10));
+      } else {
+        _y.addAll(_yUnmodified.map((y) => y.toDouble()));
+      }
+    }
   }
 
-  void setYConstraints(double lower, double upper) {
-    _lowerYConstraints = lower;
-    _upperYConstraints = upper;
-    xToPaint = _xToPaint;
-    yToPaint = _yToPaint;
-  }
 
-  List<double> get _xToPaint => X.where((x) => x >= _lowerXConstraints && 
-                                              x <= _upperXConstraints &&
-                                              mapXToY[x]! >= _lowerYConstraints &&
-                                              mapXToY[x]! <= _upperYConstraints).toList();
-
-  List<double> get _yToPaint => xToPaint.map((x) => mapXToY[x]!).toList();
 
   @override
   bool operator ==(Object other) =>
       other is Graph &&
       other.runtimeType == runtimeType &&
-      other.X == X;
-
+      other._x == _x &&
+      other._y == _y;
 
   @override
-  int get hashCode => X.hashCode * Y.hashCode;
+  int get hashCode => _x.hashCode * _y.hashCode;
   
-  void _initValues() {
-    if (X.length != Y.length) {
-
-      throw Exception('X and Y must be the same length');
-
-    }
-    if (X.length < 2) {
-
-      throw Exception('A minimum of 2 values are needed to plot a graph');
-      
-    }
-    xMax = X.reduce(max);
-    xMin = X.reduce(min);
-
-    yMax = Y.reduce(max);
-    yMin = Y.reduce(min);
-
-    _upperXConstraints = xMax;
-    _lowerXConstraints = xMin;
-
-    _upperYConstraints = yMax;
-    _lowerYConstraints = yMin;
-    
-    xToPaint = X;
-    yToPaint = Y;
-
-
-  }
-  
-
-
   
 
 }
+
