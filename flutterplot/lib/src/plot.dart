@@ -7,10 +7,9 @@ import 'package:flutterplot/src/annotation.dart';
 import 'package:flutterplot/src/custom_painters.dart';
 import 'package:flutterplot/src/provider.dart';
 
-
-/// A widget that displays a FlutterPlot [Plot].
+/// A widget that displays a FlutterPlot Plot.
 /// 
-/// The plot will display the FlutterPlot [Graph] objects specified
+/// The plot will display the FlutterPlot Graph objects specified
 /// 
 /// This sample shows a simple graph:
 /// 
@@ -38,7 +37,7 @@ class Plot extends StatelessWidget {
    ///Creates a widget that displays a FlutterPlot Plot
   
   const Plot({
-    Key? key,
+    super.key,
     required this.graphs,
     this.xUnit,
     this.yUnit, 
@@ -55,7 +54,7 @@ class Plot extends StatelessWidget {
     this.padding = 0,
     this.ticksFractionDigits = 3,
     this.crosshairFractionDigits = 2,
-  }) : super(key: key);
+  });
 
 
   /// The FlutterPlot graphs to paint.
@@ -123,9 +122,13 @@ class Plot extends StatelessWidget {
 
 class InteractivePlot extends StatefulWidget {
 
-  InteractivePlot({required this.state});
+  const InteractivePlot({super.key, required this.state});
 
   final PlotState state;
+
+
+
+
 
 
   @override
@@ -156,7 +159,7 @@ class InteractivePlotState extends State<InteractivePlot> {
 
   void _handleMouseScroll(double dy) {
     if (shiftDown) {
-      var constrained = widget.state.setXConstraints(dy);
+      final constrained = widget.state.setXConstraints(dy);
       if (constrained) {
         setState(() {
           widget.state.resizePlot(true, false);
@@ -164,7 +167,7 @@ class InteractivePlotState extends State<InteractivePlot> {
       }
     }
     else if (controlDown) {
-      var constrained = widget.state.setYConstraints(dy);
+      final constrained = widget.state.setYConstraints(dy);
       if (constrained) {
         setState(() {
           widget.state.resizePlot(false, true);
@@ -172,8 +175,8 @@ class InteractivePlotState extends State<InteractivePlot> {
       }
     }
     else {
-      var xConstrained = widget.state.setXConstraints(dy);
-      var yConstrained = widget.state.setYConstraints(dy);
+      final xConstrained = widget.state.setXConstraints(dy);
+      final yConstrained = widget.state.setYConstraints(dy);
       if (xConstrained && yConstrained) {
         setState(() {
           widget.state.resizePlot();        
@@ -193,26 +196,32 @@ class InteractivePlotState extends State<InteractivePlot> {
     }
   }
 
-  void _handlePointerDown( PointerDownEvent event) {
+  void _handlePointerDown(PointerDownEvent event) {
+
     setState(() {
-      if (widget.state.currentInteraction != Interaction.annotation) {
-        if (event.kind == PointerDeviceKind.mouse && event.buttons == kSecondaryMouseButton) {
-          widget.state.currentInteraction = Interaction.graph;
-        } else {
-          widget.state.currentInteraction = Interaction.crosshair;
-        }
+      if (widget.state.checkAnnotationHit(event)) {
+        widget.state.currentInteraction = Interaction.annotation;
+      }
+      else if (event.kind == PointerDeviceKind.mouse && event.buttons == kSecondaryMouseButton) {
+        widget.state.currentInteraction = Interaction.graph;
+
+      } else {
+        widget.state.checkCrosshairHit(event);
+        widget.state.currentInteraction = Interaction.crosshair;
       }
     });
   }
   
 
   void _handlePointerMove(PointerMoveEvent event) {
-
     switch(widget.state.currentInteraction) {
       case Interaction.annotation:
+        setState(() {
+            widget.state.moveActiveAnnotation(event);
+        });
         break;
       case Interaction.crosshair:
-          widget.state.moveActiveCrosshairs(event);
+          widget.state.moveActiveCrosshair(event);
           widget.state.crosshairState.value++;
         break;
       case Interaction.graph:
@@ -224,7 +233,6 @@ class InteractivePlotState extends State<InteractivePlot> {
               widget.state.resizePlot();
               moveFreq = 0;
               moveOffset = Offset.zero;
-              print("OK");
             });
 
           }
@@ -272,7 +280,7 @@ class InteractivePlotState extends State<InteractivePlot> {
             }
             return Listener(
                   onPointerDown: (event) {
-                    _handlePointerDown(event);
+                    _handlePointerDown(event);   
                   },
                   onPointerMove: (event) {
                     _handlePointerMove(event);
@@ -292,16 +300,9 @@ class InteractivePlotState extends State<InteractivePlot> {
                               width: windowConstraints.maxWidth,
                               height: windowConstraints.maxHeight,
                               child: CustomPaint(
+                                  foregroundPainter: GraphPainter(state: widget.state),
                                   painter: BackgroundPainter(state: widget.state),
                                   )
-                              ),
-                        SizedBox(
-                              width: windowConstraints.maxWidth,
-                              height: windowConstraints.maxHeight,
-                              child:  CustomPaint(
-                                  painter: GraphPainter(state: widget.state),
-                                  )
-            
                         ),
                         RepaintBoundary(
                           child: ValueListenableBuilder(
@@ -316,12 +317,10 @@ class InteractivePlotState extends State<InteractivePlot> {
                                 );
                             }),
                           ),
-                        RepaintBoundary(
-                          child: SizedBox(
+                        SizedBox(
                             width: windowConstraints.maxWidth,
                             height: windowConstraints.maxHeight,
                             child:  AnnotationLayer(state: widget.state, context: context),
-                        ),
                         ),
                       ],
                   )

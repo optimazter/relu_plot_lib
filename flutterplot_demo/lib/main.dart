@@ -36,7 +36,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 
-
   @override
   Widget build(BuildContext context) {
 
@@ -45,7 +44,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
@@ -56,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: 30,
             xUnit: 'Hz',
             yUnit: 'dB',
-            xLog: true,
+            xLog: false,
             yLog: false,
             ticksFractionDigits: 0,
             numYTicks: 5,
@@ -70,17 +68,27 @@ class _MyHomePageState extends State<MyHomePage> {
                     label: 'Crosshair', 
                     active: true, 
                     yPadding: 10, 
-                    color: Colors.blue)],
+                    color: Colors.blue),
+                    Crosshair(
+                      label: 'Crosshair 2',
+                      active: false,
+                      yPadding: 100,
+                      color: Colors.red,
+                    )
+                    ],
                 annotations: [
-                  Annotation(child: const SizedBox(
-                    width: 100,
-                    height: 80,
-                    child: Card.filled(
+                  Annotation(
+                    width: 120,
+                    height: 100,
+                    child: const Card.filled(
                     color: Colors.blue,
-                    child: Text('Simple Annotation'),
+                  
+                    child: Text(
+                      'This is an annotation.'
+                    ),
                 )
                 )
-              )]
+                ]
               ),
               ],
         )

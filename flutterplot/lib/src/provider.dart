@@ -1,9 +1,8 @@
 
 import 'dart:math';
-import 'dart:ui';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
+import 'package:flutterplot/src/hittable_plot_object.dart';
 
 
 
@@ -26,7 +25,7 @@ class PlotState  {
 
   BoxConstraints windowConstraints = BoxConstraints();
   late PlotConstraints plotConstraints;
-  late PlotConstraints plotExtremes;
+  late final PlotConstraints plotExtremes;
 
   final Map<Offset, RenderPoint> pixelLUT = {};
   final Map<Graph, List<RenderPoint>> graphRenderPoints = {};
@@ -35,9 +34,9 @@ class PlotState  {
   final Map<double, String> xCrosshairLabels = {};
   final Map<double, String> yCrosshairLabels = {};
 
-
-  List<Annotation> annotations = [];
-
+  Annotation? activeAnnotation;
+  Crosshair? activeCrosshair;
+  Graph? activeGraph;
 
   double get sidePadding => plot.padding + 40;
   double get overPadding => plot.padding;
@@ -80,36 +79,95 @@ class PlotState  {
   Interaction currentInteraction = Interaction.crosshair;
 
   int calculateDecimate() {
-    var display = WidgetsBinding.instance.platformDispatcher.views.first.display;
+    final display = WidgetsBinding.instance.platformDispatcher.views.first.display;
     debugLog('Measured Refresh Rate was ${display.refreshRate} Hz');
     return display.refreshRate ~/ 10;
   }
 
 
-  void moveActiveCrosshairs(PointerMoveEvent event) {
-    
+  Offset getPixelFromAnnotation(Annotation object) {
+    return getPixelFromValue(object.value!);
+  }
+
+  Offset getPixelFromCrosshair(Crosshair object) {
+    return Offset(
+      xScaler.scale(object.value!.dx),
+      object.yPadding
+    );
+  }
+
+  bool hit(PointerDownEvent event, HittablePlotObject object) {
+
+    final Offset eventPixel = event.localPosition;
+
+    final Offset pixelPosition = object.getPixelFromValue!(object);
+
+    final halfWidth = object.width / 2;
+    final halfHeight = object.height / 2;
+
+    if (eventPixel.dx >= pixelPosition.dx - halfWidth && eventPixel.dx <= pixelPosition.dx + halfWidth
+      && eventPixel.dy >= pixelPosition.dy - halfHeight && eventPixel.dy <= pixelPosition.dx + halfHeight) {
+        return true;
+      }
+
+    return false;
+  }
+
+
+  bool checkAnnotationHit(PointerDownEvent event) {
+
+    for (Graph graph in plot.graphs) {
+
+      if (graph.annotations == null) {
+        continue;
+      }
+      for (Annotation annotation in graph.annotations!) {
+        if (hit(event, annotation)) {
+          activeAnnotation = annotation;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
+  bool checkCrosshairHit(PointerDownEvent event) {
+
     for (Graph graph in plot.graphs) {
 
       if (graph.crosshairs == null) {
         continue;
       }
-
       for (Crosshair crosshair in graph.crosshairs!) {
-
-        if (!crosshair.active) { 
-          continue;
+        if (hit(event, crosshair)) {
+          activeCrosshair = crosshair;
+          activeGraph = graph;
+          return true;
         }
-        
-        int? i = _getXIndexFromPixel(graph, event.localPosition.dx, event.localDelta.dx, crosshair.prevIndex);
-        
-        if (i != null) {
-
-          crosshair.value =  Offset(graph.X[i], graph.Y[i]);
-          crosshair.prevIndex = i;  
-
-        }
-      }
+      } 
     }
+    return false;
+  }
+
+  void moveActiveAnnotation(PointerMoveEvent event) {
+
+    activeAnnotation?.value = getValueFromPixel(event.localPosition);
+
+  }
+
+  void moveActiveCrosshair(PointerMoveEvent event) {
+
+    if (activeCrosshair != null) {
+
+      final int? i = _getXIndexFromPixel(activeGraph!, event.localPosition.dx, event.localDelta.dx, activeCrosshair!.prevIndex);
+      
+      if (i != null) {
+        activeCrosshair?.value =  Offset(activeGraph!.X[i], activeGraph!.Y[i]);
+        activeCrosshair?.prevIndex = i;  
+      }
+    }     
+
   }
 
 
@@ -122,8 +180,8 @@ class PlotState  {
 
   void movePlot(Offset moveDelta) {
 
-    var xMovement = moveDelta.dx * xMovementScalar;
-    var yMovement = moveDelta.dy * yMovementScalar;
+    final xMovement = moveDelta.dx * xMovementScalar;
+    final yMovement = moveDelta.dy * yMovementScalar;
 
     plotConstraints.xMin -= xMovement;
     plotConstraints.xMax -= xMovement;
@@ -208,15 +266,15 @@ class PlotState  {
   String toLogarithmicLabel(num valPow, String unit) {
     switch (valPow) {
       case >= 1e12:
-        return '${(valPow / 1e12).toStringAsFixed(plot.ticksFractionDigits)} T${unit}';
+        return '${(valPow / 1e12).toStringAsFixed(plot.ticksFractionDigits)} T$unit';
       case >= 1e9:
-        return '${(valPow / 1e9).toStringAsFixed(plot.ticksFractionDigits)} G${unit}';
+        return '${(valPow / 1e9).toStringAsFixed(plot.ticksFractionDigits)} G$unit';
       case >= 1e6:
-        return '${(valPow / 1e6).toStringAsFixed(plot.ticksFractionDigits)} M${unit}';
+        return '${(valPow / 1e6).toStringAsFixed(plot.ticksFractionDigits)} M$unit';
       case >= 1e3:
-        return '${(valPow / 1e3).toStringAsFixed(plot.ticksFractionDigits)} K${unit}';
+        return '${(valPow / 1e3).toStringAsFixed(plot.ticksFractionDigits)} K$unit';
       default:
-        return '${valPow.toStringAsFixed(plot.ticksFractionDigits)} ${unit}';
+        return '${valPow.toStringAsFixed(plot.ticksFractionDigits)} $unit';
     }
 
   }
@@ -235,7 +293,7 @@ class PlotState  {
         }
         label = toLogarithmicLabel(valPow, unit);
       } else {
-        label = '${val.toStringAsFixed(plot.ticksFractionDigits)} ${unit}';
+        label = '${val.toStringAsFixed(plot.ticksFractionDigits)} $unit';
       }
       if (y) {
         labels[label] = windowConstraints.maxHeight - scaler.scale(val);
@@ -326,26 +384,7 @@ class PlotState  {
 
     this.windowConstraints = windowConstraints;
     resizePlot();
-
-    // xScaler.setScaling(plotConstraints.xMin, plotConstraints.xMax, 0, windowConstraints.maxWidth);
-    // yScaler.setScaling(plotConstraints.yMin, plotConstraints.yMax, 0, windowConstraints.maxHeight);
-
-    // for (Graph graph in plot.graphs) {
-    //   graphRenderPoints[graph] = [];
-
-    //   for (int i = 0; i < graph.X.length; i++) {
-
-    //     double pxX = xScaler.scale(graph.X[i]);
-    //     double pxY = yScaler.scale(graph.Y[i]);
-
-    //     pixelLUT[Offset(graph.X[i], graph.Y[i])]!.pixel = Offset(pxX, windowConstraints.maxHeight - pxY);
-    //     graphRenderPoints[graph]!.add(pixelLUT[Offset(graph.X[i], graph.Y[i])]!);
-        
-    //   }
-    // }
-
-    // initXTicks();
-    // initYTicks();
+    
   }
 
 
@@ -392,17 +431,21 @@ class PlotState  {
 
     for (int j = 0; j < plot.graphs.length; j++) {
 
-      var graph = plot.graphs[j];
-      var graphPaint = Paint()..color = graph.color ?? Colors.black..strokeWidth = graph.linethickness ?? 1;
+      final graph = plot.graphs[j];
+      final graphPaint = Paint()..color = graph.color ?? Colors.black..strokeWidth = graph.linethickness ?? 1;
 
       graphRenderPoints[graph] = [];
+
+      if (graph.X.length != graph.Y.length) {
+        throw FlutterPlotException('Graph [x] and [y] must be of equal length, but found ${graph.X.length} x-values and ${graph.Y.length} y-values for $graph.');
+      }
 
       for (int i = 0; i < graph.X.length; i++) {
 
         double pxX = xScaler.scale(graph.X[i]);
         double pxY = yScaler.scale(graph.Y[i]);
 
-        var renderPoint = RenderPoint(
+        final renderPoint = RenderPoint(
                                   pixel: Offset(pxX, windowConstraints.maxHeight - pxY),
                                   paint: graphPaint,
                                   id: i * j
@@ -414,24 +457,39 @@ class PlotState  {
       
       
       if (graph.annotations != null) {
-        graph.annotations!.forEach((annotation) {
-          if (annotation.position == null) {
+        for (var annotation in graph.annotations!) {
+          if (annotation.value == null) {
             int index = graph.X.length ~/ 2;
-            annotation.position = Offset(graph.X[index], graph.Y[index]);
+            annotation.value = Offset(graph.X[index], graph.Y[index]);
           }
-          annotations.add(annotation);
-        });
+          annotation.getPixelFromValue = getPixelFromAnnotation;
+        }
       }
 
       if (graph.crosshairs != null) {
 
-        graph.crosshairs!.forEach((crosshair) {
+        for (int i = 0; i < graph.crosshairs!.length; i++) {
+
+          Crosshair crosshair = graph.crosshairs![i];
+
+          if (crosshair.active && activeCrosshair != null) {
+            throw FlutterPlotException('Only one crosshair should be [active]. Otherwise, weird Plot interactions will happen!');
+          }
+
+          if (crosshair.active) {
+            activeCrosshair = crosshair;
+            activeGraph = graph;
+          }
+
+          crosshair.getPixelFromValue = getPixelFromCrosshair;
+
           if (crosshair.value == null) {
             int index = graph.X.length ~/ 2;
             crosshair.prevIndex = index;
             crosshair.value = Offset(graph.X[index], graph.Y[index]);
           }
-         });
+
+         }
       }
     }
 
@@ -445,6 +503,8 @@ class PlotState  {
     xCrosshairLabels.clear();
     yCrosshairLabels.clear();
   }
+
+
 
 }
 
@@ -494,7 +554,7 @@ class RenderPoint {
   final Paint paint;
 
   static RenderPoint get zero {
-    return RenderPoint(pixel: Offset(0, 0), paint: Paint(), id: -1);
+    return RenderPoint(pixel: const Offset(0, 0), paint: Paint(), id: -1);
   }
 
   @override
@@ -532,4 +592,10 @@ class PlotConstraints {
   @override
   int get hashCode => xMin.hashCode;
 
+}
+
+
+class FlutterPlotException implements Exception {
+  String cause;
+  FlutterPlotException(this.cause);
 }

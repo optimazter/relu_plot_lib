@@ -2,6 +2,8 @@
 
 import 'dart:ui';
 
+import 'package:flutterplot/src/hittable_plot_object.dart';
+
 
 /// A crosshair which can be attached to a FlutterPlot [Graph].
 /// 
@@ -9,7 +11,7 @@ import 'dart:ui';
 /// while pressing the left mouse button. The crosshair will display the 
 /// coordinate (x,y) where the crosshair is located on the graph.
 /// 
-class Crosshair {
+class Crosshair extends HittablePlotObject {
   
 
   Crosshair(
@@ -17,9 +19,9 @@ class Crosshair {
     required this.active, 
     required this.yPadding,
     this.color,
-    this.width = 120,
-    this.height = 70,
-    this.value,});
+    super.width = 120,
+    super.height = 70,
+    super.value,});
 
   /// The label to display for this crosshair.
   final String label;
@@ -31,21 +33,13 @@ class Crosshair {
   /// the display box from the top of the plot.
   final double yPadding; 
 
-  /// The width (in pixels) of the display box.
-  final double width; 
-
-  /// The height (in pixels) of the display box.
-  final double height; 
-
-  /// Wheter this crosshair responds on mouse movement or not.
+  /// Wheter this crosshair should be initially active or not. Only one crosshair should be active.
   bool active;
-
-  /// The coordinate (in the Plot coordinate system contrary to the screen's pixel coordinates).
-  Offset? value;
 
   /// The previous index which will be used for searching for the nearest point
   /// when moving the crosshair.
   int prevIndex = 0;
+
 
   
   @override

@@ -32,8 +32,6 @@ class BackgroundPainter extends CustomPainter {
 
   void _paintBorders(Canvas canvas, double width, double height, Paint primaryLinePaint, Paint secondaryLinePaint) {
 
-    //canvas.clipRect(Rect.fromLTRB(0, 0, state.windowConstraints!.maxWidth + state.sidePadding, state.windowConstraints!.maxHeight + state.overPadding));
-
     canvas.drawLine(Offset(0, height), Offset.zero, primaryLinePaint);
     canvas.drawLine(Offset(0, state.windowConstraints.maxHeight), Offset(width, height), primaryLinePaint);
 
@@ -109,11 +107,9 @@ class GraphPainter extends CustomPainter {
       canvas.drawLine(renderPoints[i].pixel, renderPoints[i + 1].pixel, renderPoints[i].paint);
 
     }
-
   }
     
   
-
 
 
   @override
@@ -147,15 +143,14 @@ class CrosshairPainter extends CustomPainter {
     
     canvas.clipRect(Rect.fromLTRB(-state.sidePadding, 0, state.windowConstraints.maxWidth + state.sidePadding, state.windowConstraints.maxHeight));
 
-    state.plot.graphs.forEach((graph) {
+    for (var graph in state.plot.graphs) {
 
       if (graph.crosshairs != null) {
 
-        graph.crosshairs!.forEach((crosshair) { 
+        for (var crosshair in graph.crosshairs!) { 
           crosshairLinePaint..color = Colors.black..strokeWidth = 1.3;
-          crosshairBoxPaint..color = crosshair.color??Colors.black..style = PaintingStyle.fill;
-
-    
+          crosshairBoxPaint..color = crosshair.active ? crosshair.color : crosshair.color.withAlpha(150)..style = PaintingStyle.fill;
+          
           _paintCrosshair(
             canvas, 
             crosshair,
@@ -163,9 +158,9 @@ class CrosshairPainter extends CustomPainter {
             crosshairBoxPaint, 
             textPainter
             );
-        });
+        }
       }
-    });
+    }
   }
   
 
