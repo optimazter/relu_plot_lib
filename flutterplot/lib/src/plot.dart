@@ -128,6 +128,10 @@ class InteractivePlot extends StatefulWidget {
 
 
 
+  
+
+
+
 
 
 
@@ -254,6 +258,13 @@ class InteractivePlotState extends State<InteractivePlot> {
     
   }
 
+
+
+
+
+
+
+
   @override
   void initState() {
     super.initState();
@@ -278,6 +289,7 @@ class InteractivePlotState extends State<InteractivePlot> {
             if (windowConstraints != widget.state.windowConstraints) {
               widget.state.resizeWindow(windowConstraints);
             }
+
             return Listener(
                   onPointerDown: (event) {
                     _handlePointerDown(event);   
