@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/hittable_plot_object.dart';
-import 'package:flutterplot/src/provider.dart';
+import 'package:flutterplot/src/plot_components/hittable_plot_object.dart';
+import 'package:flutterplot/src/app.dart';
 
 
 
@@ -48,7 +48,7 @@ class _AnnotationWidget extends StatefulWidget {
   });
 
   final Annotation annotation;
-  final PlotState state;
+  final FlutterPlotState state;
   final BuildContext context;
 
 
@@ -97,14 +97,14 @@ class _AnnotationWidgetState extends State<_AnnotationWidget> {
   class AnnotationLayer extends StatelessWidget {
     
     const AnnotationLayer({super.key, required this.state, required this.context});
-    final PlotState state;
+    final FlutterPlotState state;
     final BuildContext context;
 
 
     @override
     Widget build(BuildContext context) {
       final List<_AnnotationWidget> annotationWidgets = [];
-      for (var graph in state.plot.graphs) {
+      for (var graph in state.widget.plot.graphs) {
         graph.annotations?.forEach(
           (annotation)  => annotationWidgets.add(_AnnotationWidget(annotation: annotation, state: state, context: context)
           )
