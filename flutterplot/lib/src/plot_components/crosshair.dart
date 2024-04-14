@@ -2,7 +2,7 @@
 
 import 'dart:ui';
 
-import 'package:flutterplot/src/hittable_plot_object.dart';
+import 'package:flutterplot/src/plot_components/hittable_plot_object.dart';
 
 
 /// A crosshair which can be attached to a FlutterPlot [Graph].
@@ -12,13 +12,12 @@ import 'package:flutterplot/src/hittable_plot_object.dart';
 /// coordinate (x,y) where the crosshair is located on the graph.
 /// 
 class Crosshair extends HittablePlotObject {
-  
 
   Crosshair(
     {required this.label, 
     required this.active, 
     required this.yPadding,
-    this.color,
+    required this.color,
     super.width = 120,
     super.height = 70,
     super.value,});
@@ -27,7 +26,7 @@ class Crosshair extends HittablePlotObject {
   final String label;
 
   /// The color of the display box as well as circle for this crosshair.
-  final Color? color;
+  final Color color;
 
   /// The padding (in pixels) on the y-axis which seperates 
   /// the display box from the top of the plot.

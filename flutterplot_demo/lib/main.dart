@@ -39,8 +39,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
 
-    final x = List<double>.generate(10000, (i) => i + 1);
-    final y = x.map((x) => 2 * x + 3).toList();
+    final x1 = List<double>.generate(10000, (i) => i + 1);
+    final y1 = x1.map((x) => 2 * x + 3).toList();
+
+    final x2 = List<double>.generate(10000, (i) => i + 1);
+    final y2 = x2.map((x) => x + 2).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -54,27 +57,21 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: 30,
             xUnit: 'Hz',
             yUnit: 'dB',
-            xLog: false,
-            yLog: false,
+            xLog: true,
             ticksFractionDigits: 0,
             numYTicks: 5,
             graphs: [
               Graph(
-                x: x, 
-                y: y,
+                x: x1, 
+                y: y1,
                 color: Colors.blue,
                 crosshairs: [
                   Crosshair(
-                    label: 'Crosshair', 
+                    label: 'Crosshair 1', 
                     active: true, 
                     yPadding: 10, 
-                    color: Colors.blue),
-                    Crosshair(
-                      label: 'Crosshair 2',
-                      active: false,
-                      yPadding: 100,
-                      color: Colors.red,
-                    )
+                    color: Colors.blue
+                    ),
                     ],
                 annotations: [
                   Annotation(
@@ -82,14 +79,29 @@ class _MyHomePageState extends State<MyHomePage> {
                     height: 100,
                     child: const Card.filled(
                     color: Colors.blue,
-                  
-                    child: Text(
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: Text(
                       'This is an annotation.'
                     ),
+                  )
                 )
                 )
                 ]
               ),
+              Graph(
+                x: x2,
+                y: y2,
+                color: Colors.red,
+                crosshairs: [
+                  Crosshair(
+                      label: 'Crosshair 2',
+                      active: false,
+                      yPadding: 100,
+                      color: Colors.red,
+                  )
+                ]
+              )
               ],
         )
        )

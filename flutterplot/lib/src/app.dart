@@ -30,7 +30,6 @@ class FlutterPlotApp extends StatefulWidget {
 
 class FlutterPlotState extends State<FlutterPlotApp> {
 
-
   //Public fields
   BoxConstraints windowConstraints = BoxConstraints();
 
@@ -61,7 +60,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
 
   late PlotConstraints _plotConstraints;
-  late final PlotConstraints _plotExtremes;
+  late PlotConstraints _plotExtremes;
 
 
   final Map<String, double> _xTicks = {};
@@ -110,6 +109,15 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     return display.refreshRate ~/ 10;
   }
 
+  Offset _getPixelFromHittablePlotObject(HittablePlotObject object) {
+    if (object is Annotation) {
+      return _getPixelFromAnnotation(object);
+    }
+    if (object is Crosshair) {
+      return _getPixelFromCrosshair(object);
+    }
+    throw FlutterPlotException('Object is neither Annotation or Crosshair');
+  }
 
   Offset _getPixelFromAnnotation(Annotation object) {
     return getPixelFromValue(object.value!);
@@ -125,7 +133,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   bool _hit(PointerDownEvent event, HittablePlotObject object) {
 
     final Offset eventPixel = event.localPosition;
-    final Offset pixelPosition = object.getPixelFromValue!(object);
+    final Offset pixelPosition = _getPixelFromHittablePlotObject(object);
 
     final halfWidth = object.width / 2;
     final halfHeight = object.height / 2;
@@ -166,6 +174,8 @@ class FlutterPlotState extends State<FlutterPlotApp> {
       }
       for (Crosshair crosshair in graph.crosshairs!) {
         if (_hit(event, crosshair)) {
+          _activeCrosshair?.active = false;
+          crosshair.active = true;
           _activeCrosshair = crosshair;
           _activeGraph = graph;
           return true;
@@ -479,7 +489,6 @@ class FlutterPlotState extends State<FlutterPlotApp> {
             int index = graph.X.length ~/ 2;
             annotation.value = Offset(graph.X[index], graph.Y[index]);
           }
-          annotation.getPixelFromValue = _getPixelFromAnnotation;
         }
       }
 
@@ -498,8 +507,6 @@ class FlutterPlotState extends State<FlutterPlotApp> {
             _activeGraph = graph;
           }
 
-          crosshair.getPixelFromValue = _getPixelFromCrosshair;
-
           if (crosshair.value == null) {
             int index = graph.X.length ~/ 2;
             crosshair.prevIndex = index;
@@ -515,6 +522,9 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   void disposeValues() {
     pixelLUT.clear();
     graphRenderPoints.clear();
+    _activeAnnotation = null;
+    _activeCrosshair = null;
+    _activeGraph = null;
     _xTicks.clear();
     _yTicks.clear();
     xCrosshairLabels.clear();
@@ -621,12 +631,19 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   }
 
 
+
+  @override
+  void didUpdateWidget(covariant FlutterPlotApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _init();
+  }
+
+
   @override
   void initState() {
+    super.initState();
     _init();
     HardwareKeyboard.instance.addHandler(_handleKeyDownUp);
-    super.initState();
-
   }
 
 
@@ -643,9 +660,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
           builder: (context, windowConstraints) {   
             
-            if (windowConstraints != windowConstraints) {
-              _resizeWindow(windowConstraints);
-            }
+            _resizeWindow(windowConstraints);
 
             return Listener(
                   onPointerDown: (event) {

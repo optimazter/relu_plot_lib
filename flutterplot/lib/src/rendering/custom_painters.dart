@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/provider.dart';
+import 'package:flutterplot/src/app.dart';
 
 
 
@@ -11,7 +11,7 @@ class BackgroundPainter extends CustomPainter {
 
   });
 
-  final PlotState state;
+  final FlutterPlotState state;
 
   
   @override
@@ -83,7 +83,7 @@ class GraphPainter extends CustomPainter {
 
   });
 
-  final PlotState state;
+  final FlutterPlotState state;
 
   
   @override
@@ -129,7 +129,7 @@ class CrosshairPainter extends CustomPainter {
     required this.state
     });
 
-  final PlotState state;
+  final FlutterPlotState state;
 
 
   @override
@@ -143,7 +143,7 @@ class CrosshairPainter extends CustomPainter {
     
     canvas.clipRect(Rect.fromLTRB(-state.sidePadding, 0, state.windowConstraints.maxWidth + state.sidePadding, state.windowConstraints.maxHeight));
 
-    for (var graph in state.plot.graphs) {
+    for (var graph in state.widget.plot.graphs) {
 
       if (graph.crosshairs != null) {
 

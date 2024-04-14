@@ -222,9 +222,11 @@ packages:
   flutterplot:
     dependency: "direct main"
     description:
-      path: "/users/adrian/dev/flutterplot/flutterplot"
-      relative: false
-    source: path
+      path: flutterplot
+      ref: HEAD
+      resolved-ref: b5b64dee1fe0b0537b69b6145f3a32e77d2b5b92
+      url: "https://github.com/optimazter/flutterplot"
+    source: git
     version: "0.0.1"
   frontend_server_client:
     dependency: transitive

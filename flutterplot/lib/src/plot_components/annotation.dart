@@ -22,17 +22,12 @@ class Annotation extends HittablePlotObject {
     super.width = 100,
     super.height = 100,
     super.value,
-    this.onDragStarted,
-    this.onDragEnd,
+    super.onDragStarted,
+    super.onDragEnd,
   });
 
   /// The widget to use as annotation.
   final Widget child;
-
-  final Function(Offset)? onDragStarted;
-
-  /// Function called every time the annotation is moved
-  final Function(Offset)? onDragEnd;
 
 
 
@@ -79,7 +74,7 @@ class _AnnotationWidgetState extends State<_AnnotationWidget> {
   @override
   Widget build(BuildContext context) {
 
-    pixel = widget.state.getPixelFromValue(widget.annotation.value!);
+    pixel = widget.state.getPixelFromValue(widget.annotation.value ?? Offset.zero);
 
     return Positioned(
           left: pixel.dx - widget.annotation.width / 2,
