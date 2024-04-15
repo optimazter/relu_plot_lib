@@ -13,7 +13,6 @@ enum Interaction {
   crosshair,
   graph,
   annotation,
-  none,
 } 
 
 
@@ -47,6 +46,8 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   Graph? _activeGraph;
 
   final ValueNotifier<int> _crosshairState = ValueNotifier(0);
+  final ValueNotifier<int> _annotationState = ValueNotifier(0);
+
   int _decimate = 0;
   int _moveFreq = 0;
 
@@ -121,12 +122,12 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   }
 
   Offset _getPixelFromAnnotation(Annotation object) {
-    return getPixelFromValue(object.value!);
+    return getPixelFromValue(object.coordinate!);
   }
 
   Offset _getPixelFromCrosshair(Crosshair object) {
     return Offset(
-      _xScaler.scale(object.value!.dx),
+      _xScaler.scale(object.coordinate!.dx),
       object.yPadding
     );
   }
@@ -140,7 +141,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     final halfHeight = object.height / 2;
 
     if (eventPixel.dx >= pixelPosition.dx - halfWidth && eventPixel.dx <= pixelPosition.dx + halfWidth
-      && eventPixel.dy >= pixelPosition.dy - halfHeight && eventPixel.dy <= pixelPosition.dx + halfHeight) {
+      && eventPixel.dy >= pixelPosition.dy - halfHeight && eventPixel.dy <= pixelPosition.dy + halfHeight) {
         return true;
       }
 
@@ -157,7 +158,9 @@ class FlutterPlotState extends State<FlutterPlotApp> {
       }
       for (Annotation annotation in graph.annotations!) {
         if (_hit(event, annotation)) {
+          _activeAnnotation?.active = false;
           _activeAnnotation = annotation;
+          _activeAnnotation?.active = true;
           return true;
         }
       }
@@ -188,7 +191,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
   void _moveActiveAnnotation(PointerMoveEvent event) {
 
-    _activeAnnotation?.value = getValueFromPixel(event.localPosition);
+    _activeAnnotation?.coordinate = getValueFromPixel(event.localPosition);
 
   }
 
@@ -199,7 +202,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
       final int? i = _getXIndexFromPixel(_activeGraph!, event.localPosition.dx, event.localDelta.dx, _activeCrosshair!.prevIndex);
       
       if (i != null) {
-        _activeCrosshair?.value =  Offset(_activeGraph!.X[i], _activeGraph!.Y[i]);
+        _activeCrosshair?.coordinate =  Offset(_activeGraph!.X[i], _activeGraph!.Y[i]);
         _activeCrosshair?.prevIndex = i;  
       }
     }     
@@ -356,7 +359,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
   Offset getValueFromPixel(Offset pixel) => Offset(_xScaler.inverse(pixel.dx), _yScaler.inverse(windowConstraints.maxHeight - pixel.dy));
 
-  Offset getPixelFromValue(Offset value) => Offset(_xScaler.scale(value.dx), windowConstraints.maxHeight - _yScaler.scale(value.dy));
+  Offset getPixelFromValue(Offset coordinate) => Offset(_xScaler.scale(coordinate.dx), windowConstraints.maxHeight - _yScaler.scale(coordinate.dy));
 
 
 
@@ -372,9 +375,9 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     }
 
 
-    pixelLUT.forEach((value, point) {
+    pixelLUT.forEach((coordinate, point) {
 
-      point.pixel = Offset(_xScaler.scale(value.dx), windowConstraints.maxHeight - _yScaler.scale(value.dy));
+      point.pixel = Offset(_xScaler.scale(coordinate.dx), windowConstraints.maxHeight - _yScaler.scale(coordinate.dy));
 
     });
 
@@ -486,9 +489,9 @@ class FlutterPlotState extends State<FlutterPlotApp> {
       
       if (graph.annotations != null) {
         for (var annotation in graph.annotations!) {
-          if (annotation.value == null) {
+          if (annotation.coordinate == null) {
             int index = graph.X.length ~/ 2;
-            annotation.value = Offset(graph.X[index], graph.Y[index]);
+            annotation.coordinate = Offset(graph.X[index], graph.Y[index]);
           }
         }
       }
@@ -508,10 +511,10 @@ class FlutterPlotState extends State<FlutterPlotApp> {
             _activeGraph = graph;
           }
 
-          if (crosshair.value == null) {
+          if (crosshair.coordinate == null) {
             int index = graph.X.length ~/ 2;
             crosshair.prevIndex = index;
-            crosshair.value = Offset(graph.X[index], graph.Y[index]);
+            crosshair.coordinate = Offset(graph.X[index], graph.Y[index]);
           }
 
          }
@@ -577,44 +580,37 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     setState(() {
       if (_checkAnnotationHit(event)) {
         currentInteraction = Interaction.annotation;
+        _activeAnnotation?.onDragStarted?.call(_activeAnnotation!.coordinate!);
       }
-      else if (event.kind == PointerDeviceKind.mouse && event.buttons == kSecondaryMouseButton) {
+      else if (_checkCrosshairHit(event)) {      
+        currentInteraction = Interaction.crosshair;
+        _activeCrosshair?.onDragStarted?.call(_activeCrosshair!.coordinate!);
+      } 
+      else {
         currentInteraction = Interaction.graph;
-
-      } else {
-          _checkCrosshairHit(event);       
-          if (_activeCrosshair != null) {
-            currentInteraction = Interaction.crosshair;
-            _activeCrosshair?.onDragStarted?.call(_activeCrosshair!.value!);
-          } else {
-            currentInteraction = Interaction.none;
-          }
       }
-
     });
   }
 
   void _handlePointerUp(PointerUpEvent event) {
     switch(currentInteraction) {
       case Interaction.annotation:
-        _activeAnnotation!.onDragEnd?.call(_activeAnnotation!.value!);
+        _activeAnnotation!.onDragEnd?.call(_activeAnnotation!.coordinate!);
         break;
       case Interaction.crosshair:
-        _activeCrosshair!.onDragEnd?.call(_activeCrosshair!.value!);
+        _activeCrosshair!.onDragEnd?.call(_activeCrosshair!.coordinate!);
       case Interaction.graph:
         break;
-      case Interaction.none:
-        break;
     }
+    currentInteraction = Interaction.graph;
   }
   
 
   void _handlePointerMove(PointerMoveEvent event) {
     switch(currentInteraction) {
       case Interaction.annotation:
-        setState(() {
-            _moveActiveAnnotation(event);
-        });
+          _moveActiveAnnotation(event);
+          _annotationState.value++;
         break;
       case Interaction.crosshair:
           _moveActiveCrosshair(event);
@@ -632,8 +628,6 @@ class FlutterPlotState extends State<FlutterPlotApp> {
             });
 
           }
-        break;
-      case Interaction.none:
         break;
     }
   }
@@ -716,7 +710,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
                         RepaintBoundary(
                           child: ValueListenableBuilder(
                             valueListenable: _crosshairState, 
-                            builder: (context, value, child) {
+                            builder: (context, coordinate, child) {
                              return SizedBox(
                                   width: windowConstraints.maxWidth,
                                   height: windowConstraints.maxHeight,
@@ -726,12 +720,19 @@ class FlutterPlotState extends State<FlutterPlotApp> {
                                 );
                             }),
                           ),
-                        SizedBox(
-                            width: windowConstraints.maxWidth,
-                            height: windowConstraints.maxHeight,
-                            child:  AnnotationLayer(state: this, context: context),
-                        ),
-                      ],
+                        RepaintBoundary(
+                          child: ValueListenableBuilder(
+                            valueListenable: _annotationState,
+                            builder: (context, coordinate, child) {
+                              return SizedBox(
+                                width: windowConstraints.maxWidth,
+                                height: windowConstraints.maxHeight,
+                                child:  AnnotationLayer(state: this, context: context),
+                            );
+                          }
+                        )
+                      )
+                    ],
                   )
               );
             }

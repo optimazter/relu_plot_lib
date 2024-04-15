@@ -14,22 +14,24 @@ import 'package:flutterplot/src/app.dart';
 /// desired the location, the annotation will be attached to this point
 /// in the local coordinate system created by the parent [Plot]. 
 /// 
-class Annotation extends HittablePlotObject {
-
+class Annotation<T> extends HittablePlotObject {
 
   Annotation({
     required this.child,
+    this.value,
     super.width = 100,
     super.height = 100,
-    super.value,
+    super.coordinate,
+    super.active = true,
     super.onDragStarted,
     super.onDragEnd,
   });
 
   /// The widget to use as annotation.
-  final Widget child;
+  Widget child;
 
-
+  /// A value which the annotation can hold, e.g., for referencing, a text or other purposes
+  T? value;
 
 }
 
@@ -78,7 +80,7 @@ class _AnnotationWidgetState extends State<_AnnotationWidget> {
 
     return Positioned(
           left: pixel.dx - widget.annotation.width / 2,
-          top: pixel.dy - widget.annotation.width / 2,
+          top: pixel.dy - widget.annotation.height / 2,
           child: SizedBox(
             width: widget.annotation.width,
             height: widget.annotation.height,
@@ -98,6 +100,7 @@ class _AnnotationWidgetState extends State<_AnnotationWidget> {
 
     @override
     Widget build(BuildContext context) {
+      state.debugLog('Repainting Annotations');
       final List<_AnnotationWidget> annotationWidgets = [];
       for (var graph in state.widget.plot.graphs) {
         graph.annotations?.forEach(

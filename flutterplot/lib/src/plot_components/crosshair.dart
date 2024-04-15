@@ -15,12 +15,12 @@ class Crosshair extends HittablePlotObject {
 
   Crosshair(
     {required this.label, 
-    required this.active, 
     required this.yPadding,
     required this.color,
+    required super.active,
     super.width = 120,
     super.height = 70,
-    super.value,});
+    super.coordinate,});
 
   /// The label to display for this crosshair.
   final String label;
@@ -32,8 +32,6 @@ class Crosshair extends HittablePlotObject {
   /// the display box from the top of the plot.
   final double yPadding; 
 
-  /// Wheter this crosshair should be initially active or not. Only one crosshair should be active.
-  bool active;
 
   /// The previous index which will be used for searching for the nearest point
   /// when moving the crosshair.
@@ -45,13 +43,13 @@ class Crosshair extends HittablePlotObject {
   bool operator ==(Object other) =>
       other is Crosshair &&
       other.runtimeType == runtimeType &&
-      other.value == value &&
+      other.coordinate == coordinate &&
       other.label == label;
 
 
 
   @override
-  int get hashCode => label.hashCode * value.hashCode;
+  int get hashCode => label.hashCode * coordinate.hashCode;
 
   
 
