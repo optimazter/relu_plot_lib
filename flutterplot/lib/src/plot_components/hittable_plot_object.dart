@@ -17,9 +17,10 @@ abstract class HittablePlotObject {
 
   Offset? value;
 
+  /// Function called every time the object drag has started
   final Function(Offset)? onDragStarted;
 
-  /// Function called every time the annotation is moved
+  /// Function called every time the object has been moved
   final Function(Offset)? onDragEnd;
 
 

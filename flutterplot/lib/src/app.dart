@@ -12,7 +12,8 @@ import 'package:flutterplot/src/rendering/custom_painters.dart';
 enum Interaction {
   crosshair,
   graph,
-  annotation
+  annotation,
+  none,
 } 
 
 
@@ -573,7 +574,6 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   }
 
   void _handlePointerDown(PointerDownEvent event) {
-
     setState(() {
       if (_checkAnnotationHit(event)) {
         currentInteraction = Interaction.annotation;
@@ -582,10 +582,30 @@ class FlutterPlotState extends State<FlutterPlotApp> {
         currentInteraction = Interaction.graph;
 
       } else {
-        _checkCrosshairHit(event);
-        currentInteraction = Interaction.crosshair;
+          _checkCrosshairHit(event);       
+          if (_activeCrosshair != null) {
+            currentInteraction = Interaction.crosshair;
+            _activeCrosshair?.onDragStarted?.call(_activeCrosshair!.value!);
+          } else {
+            currentInteraction = Interaction.none;
+          }
       }
+
     });
+  }
+
+  void _handlePointerUp(PointerUpEvent event) {
+    switch(currentInteraction) {
+      case Interaction.annotation:
+        _activeAnnotation!.onDragEnd?.call(_activeAnnotation!.value!);
+        break;
+      case Interaction.crosshair:
+        _activeCrosshair!.onDragEnd?.call(_activeCrosshair!.value!);
+      case Interaction.graph:
+        break;
+      case Interaction.none:
+        break;
+    }
   }
   
 
@@ -612,6 +632,8 @@ class FlutterPlotState extends State<FlutterPlotApp> {
             });
 
           }
+        break;
+      case Interaction.none:
         break;
     }
   }
@@ -676,6 +698,9 @@ class FlutterPlotState extends State<FlutterPlotApp> {
                   },
                   onPointerPanZoomUpdate: (PointerPanZoomUpdateEvent event) {
                     _handleMouseScroll(event.panDelta.dy);
+                  },
+                  onPointerUp: (event) {
+                    _handlePointerUp(event);
                   },
 
                   child: Stack(
