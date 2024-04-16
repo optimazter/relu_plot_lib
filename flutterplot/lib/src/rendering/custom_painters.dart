@@ -41,8 +41,8 @@ class BackgroundPainter extends CustomPainter {
 
   void _paintGridLines(Canvas canvas,  Map<String, double> xTicks, Map<String, double> yTicks, Paint linePaint, TextPainter textPainter) {
 
-    xTicks.forEach((key, value) {
-      canvas.drawLine(Offset(value, 0), Offset(value, state.windowConstraints.maxHeight), linePaint);
+    xTicks.forEach((key, coordinate) {
+      canvas.drawLine(Offset(coordinate, 0), Offset(coordinate, state.windowConstraints.maxHeight), linePaint);
       textPainter.text = TextSpan(
           style: const TextStyle(color: Colors.black), 
           text: key,
@@ -51,10 +51,10 @@ class BackgroundPainter extends CustomPainter {
           minWidth: 0,
           maxWidth: state.windowConstraints.maxWidth / xTicks.length,
         );
-      textPainter.paint(canvas, Offset(value, state.windowConstraints.maxHeight));
+      textPainter.paint(canvas, Offset(coordinate, state.windowConstraints.maxHeight));
     });
-    yTicks.forEach((key, value) {
-      canvas.drawLine(Offset(0, value), Offset(state.windowConstraints.maxWidth, value), linePaint);
+    yTicks.forEach((key, coordinate) {
+      canvas.drawLine(Offset(0, coordinate), Offset(state.windowConstraints.maxWidth, coordinate), linePaint);
       textPainter.text = TextSpan(
           style: const TextStyle(color: Colors.black), 
           text: key,
@@ -63,7 +63,7 @@ class BackgroundPainter extends CustomPainter {
           minWidth: 0,
           maxWidth: state.windowConstraints.maxWidth / xTicks.length,
         );
-      textPainter.paint(canvas, Offset(-state.sidePadding + 5, value));
+      textPainter.paint(canvas, Offset(-state.sidePadding + 5, coordinate));
     });
     
   }
@@ -166,11 +166,11 @@ class CrosshairPainter extends CustomPainter {
 
   void _paintCrosshair(Canvas canvas, Crosshair crosshair, Paint linePaint, Paint boxPaint, TextPainter textPainter) {
 
-      Offset pixelPosition = state.pixelLUT[crosshair.value]!.pixel;
+      Offset pixelPosition = state.pixelLUT[crosshair.coordinate]!.pixel;
 
       textPainter.text = TextSpan(
           style: const TextStyle(color: Colors.white), 
-          text: ' ${crosshair.label}\n  x: ${state.xCrosshairLabels[crosshair.value!.dx]} \n  y: ${state.yCrosshairLabels[crosshair.value!.dy]}');
+          text: ' ${crosshair.label}\n  x: ${state.xCrosshairLabels[crosshair.coordinate!.dx]} \n  y: ${state.yCrosshairLabels[crosshair.coordinate!.dy]}');
         textPainter.layout(
               minWidth: 0,
               maxWidth: crosshair.width,

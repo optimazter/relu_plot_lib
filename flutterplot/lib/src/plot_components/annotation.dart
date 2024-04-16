@@ -18,20 +18,20 @@ class Annotation<T> extends HittablePlotObject {
 
   Annotation({
     required this.child,
-    this.value,
     super.width = 100,
     super.height = 100,
     super.coordinate,
     super.active = true,
+    this.value,
     super.onDragStarted,
     super.onDragEnd,
   });
 
   /// The widget to use as annotation.
-  Widget child;
+  final Widget child;
 
-  /// A value which the annotation can hold, e.g., for referencing, a text or other purposes
   T? value;
+
 
 }
 
@@ -64,19 +64,18 @@ class _AnnotationWidgetState extends State<_AnnotationWidget> {
   
     final renderBox = widget.context.findRenderObject() as RenderBox;
     final localPoint = renderBox.globalToLocal(point);
-    widget.annotation.value = widget.state.getValueFromPixel(localPoint);
+    widget.annotation.coordinate = widget.state.getValueFromPixel(localPoint);
     widget.state.currentInteraction = Interaction.crosshair;
+    
+    widget.annotation.onDragEnd?.call(widget.annotation.coordinate!);
 
-    if (widget.annotation.onDragEnd != null) {
-      widget.annotation.onDragEnd!(widget.annotation.value!);
-    }
 
   }
 
   @override
   Widget build(BuildContext context) {
 
-    pixel = widget.state.getPixelFromValue(widget.annotation.value ?? Offset.zero);
+    pixel = widget.state.getPixelFromValue(widget.annotation.coordinate ?? Offset.zero);
 
     return Positioned(
           left: pixel.dx - widget.annotation.width / 2,

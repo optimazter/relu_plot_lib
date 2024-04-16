@@ -158,9 +158,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
       }
       for (Annotation annotation in graph.annotations!) {
         if (_hit(event, annotation)) {
-          _activeAnnotation?.active = false;
           _activeAnnotation = annotation;
-          _activeAnnotation?.active = true;
           return true;
         }
       }
@@ -595,10 +593,10 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   void _handlePointerUp(PointerUpEvent event) {
     switch(currentInteraction) {
       case Interaction.annotation:
-        _activeAnnotation!.onDragEnd?.call(_activeAnnotation!.coordinate!);
+        _activeAnnotation?.onDragEnd?.call(_activeAnnotation!.coordinate!);
         break;
       case Interaction.crosshair:
-        _activeCrosshair!.onDragEnd?.call(_activeCrosshair!.coordinate!);
+        _activeCrosshair?.onDragEnd?.call(_activeCrosshair!.coordinate!);
       case Interaction.graph:
         break;
     }
