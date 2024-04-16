@@ -12,7 +12,7 @@ flutterplot:
     url: https://github.com/optimazter/flutterplot
     path: flutterplot
 ```
-An example on how to implement a simple FlutterPlot Plot is shown below. For furhter information, please see the provided **flutterplot_demo**.
+An example on how to implement a simple FlutterPlot Plot is shown below. For further information, please see the provided **flutterplot_demo**.
 
 ```dart
 Plot(
@@ -47,4 +47,4 @@ Plot(
 ```
 
 Note that the FlutterPlot package is created with large datasets in mind, with few points as shown in the example above, 
-the Crosshairs movement will be weird as it will search for the nearest value, and in this case the neares values are far from each other.
+the Crosshairs movement will be weird as when it will search for the nearest value the nearest values are far from each other.
