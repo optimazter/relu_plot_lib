@@ -2,11 +2,16 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/plot_components/hittable_plot_object.dart';
+import 'package:flutterplot/src/models/scaler.dart';
+import 'package:flutterplot/src/painters/background_painter.dart';
+import 'package:flutterplot/src/painters/crosshair_painter.dart';
+import 'package:flutterplot/src/painters/graph_painter.dart';
+import 'package:flutterplot/src/models/hittable_plot_object.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
-import 'package:flutterplot/src/plot_components/annotation.dart';
-import 'package:flutterplot/src/rendering/custom_painters.dart';
+import 'package:flutterplot/src/painters/render_point.dart';
+import 'package:flutterplot/src/utils.dart';
+import 'package:flutterplot/src/widgets/annotation_layer.dart';
 
 
 enum Interaction {
@@ -16,19 +21,11 @@ enum Interaction {
 } 
 
 
-class FlutterPlotApp extends StatefulWidget {
+// ignore: must_be_immutable
+class PlotView extends StatefulWidget {
 
-  const FlutterPlotApp({super.key, required this.plot});
+  PlotView({super.key, required this.plot});
   final Plot plot;
-
-  @override
-  State<StatefulWidget> createState() => FlutterPlotState();
-  
-}
-
-
-
-class FlutterPlotState extends State<FlutterPlotApp> {
 
   //Public fields
   BoxConstraints windowConstraints = BoxConstraints();
@@ -47,15 +44,8 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
   final ValueNotifier<int> _crosshairState = ValueNotifier(0);
   final ValueNotifier<int> _annotationState = ValueNotifier(0);
-
+  
   int _decimate = 0;
-  int _moveFreq = 0;
-
-  bool _shiftDown = false;
-  bool _controlDown = false;
-
-
-  Offset _moveOffset = Offset.zero;
 
   final _xScaler = Scaler();
   final _yScaler = Scaler();
@@ -71,8 +61,8 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
 
   //Public getters
-  double get sidePadding => widget.plot.padding + 40;
-  double get overPadding => widget.plot.padding;
+  double get sidePadding => plot.padding + 40;
+  double get overPadding => plot.padding;
 
 
   Map<String, double> get xTicks {
@@ -99,11 +89,6 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   double get _xMovementScalar => (_plotConstraints.xMax - _plotConstraints.xMin).abs() / windowConstraints.maxWidth;
   double get _yMovementScalar => (_plotConstraints.yMax - _plotConstraints.yMin).abs() / windowConstraints.maxHeight;
 
-
-
-  void debugLog(String message) {
-    debugPrint('FlutterPlot: $message');
-  }
 
   int _calculateDecimate() {
     final display = WidgetsBinding.instance.platformDispatcher.views.first.display;
@@ -151,7 +136,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
   bool _checkAnnotationHit(PointerDownEvent event) {
 
-    for (Graph graph in widget.plot.graphs) {
+    for (Graph graph in plot.graphs) {
 
       if (graph.annotations == null) {
         continue;
@@ -169,7 +154,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
   bool _checkCrosshairHit(PointerDownEvent event) {
 
-    for (Graph graph in widget.plot.graphs) {
+    for (Graph graph in plot.graphs) {
 
       if (graph.crosshairs == null) {
         continue;
@@ -279,31 +264,31 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
   void _initXTicks() {
     _xTicks.clear();
-    final ticks = widget.plot.xTicks ?? _getXTicks();
-    bool toLog = widget.plot.xTicks != null;
-    _initTicks(ticks, _xTicks, _xScaler, widget.plot.xUnit ?? '', widget.plot.xLog, toLog, false);
+    final ticks = plot.xTicks ?? _getXTicks();
+    bool toLog = plot.xTicks != null;
+    _initTicks(ticks, _xTicks, _xScaler, plot.xUnit ?? '', plot.xLog, toLog, false);
   }
 
   void _initYTicks() {
     _yTicks.clear();
-    final ticks = widget.plot.yTicks ?? _getYTicks();
-    bool toLog = widget.plot.yTicks != null;
-    _initTicks(ticks, _yTicks, _yScaler, widget.plot.yUnit ?? '', widget.plot.yLog, toLog, true);
+    final ticks = plot.yTicks ?? _getYTicks();
+    bool toLog = plot.yTicks != null;
+    _initTicks(ticks, _yTicks, _yScaler, plot.yUnit ?? '', plot.yLog, toLog, true);
 
   }
 
   String _toLogarithmicLabel(num valPow, String unit) {
     switch (valPow) {
       case >= 1e12:
-        return '${(valPow / 1e12).toStringAsFixed(widget.plot.ticksFractionDigits)} T$unit';
+        return '${(valPow / 1e12).toStringAsFixed(plot.ticksFractionDigits)} T$unit';
       case >= 1e9:
-        return '${(valPow / 1e9).toStringAsFixed(widget.plot.ticksFractionDigits)} G$unit';
+        return '${(valPow / 1e9).toStringAsFixed(plot.ticksFractionDigits)} G$unit';
       case >= 1e6:
-        return '${(valPow / 1e6).toStringAsFixed(widget.plot.ticksFractionDigits)} M$unit';
+        return '${(valPow / 1e6).toStringAsFixed(plot.ticksFractionDigits)} M$unit';
       case >= 1e3:
-        return '${(valPow / 1e3).toStringAsFixed(widget.plot.ticksFractionDigits)} K$unit';
+        return '${(valPow / 1e3).toStringAsFixed(plot.ticksFractionDigits)} K$unit';
       default:
-        return '${valPow.toStringAsFixed(widget.plot.ticksFractionDigits)} $unit';
+        return '${valPow.toStringAsFixed(plot.ticksFractionDigits)} $unit';
     }
 
   }
@@ -322,7 +307,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
         }
         label = _toLogarithmicLabel(valPow, unit);
       } else {
-        label = '${val.toStringAsFixed(widget.plot.ticksFractionDigits)} $unit';
+        label = '${val.toStringAsFixed(plot.ticksFractionDigits)} $unit';
       }
       if (y) {
         labels[label] = windowConstraints.maxHeight - scaler.scale(val);
@@ -334,7 +319,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
 
   List<double> _getXTicks() {
-    int n = widget.plot.numXTicks ?? 10;
+    int n = plot.numXTicks ?? 10;
     n += 1;
     final List<double> xTicks = [];
     for (int i = 1; i < n; i++) {
@@ -345,7 +330,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   }
 
   List<double> _getYTicks() {
-    int n = widget.plot.numYTicks ?? 10;
+    int n = plot.numYTicks ?? 10;
     n += 1;
     final List<double> yTicks = [];
     for (int i = 1; i < n; i++) {
@@ -389,9 +374,7 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     _initXTicks();
     _initYTicks();
 
-    if (widget.plot.onResize != null) {
-      widget.plot.onResize!(_plotConstraints);
-    }
+    plot.onResize?.call(_plotConstraints);
 
 
   }
@@ -400,9 +383,9 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     for (int i = 0; i < vals.length; i++) {
       double val = vals[i];
       if (toLog) {
-        labels[val] = pow(e, val * ln10).toStringAsFixed(widget.plot.crosshairFractionDigits);
+        labels[val] = pow(e, val * ln10).toStringAsFixed(plot.crosshairFractionDigits);
       } else {
-        labels[val] = val.toStringAsFixed(widget.plot.crosshairFractionDigits);
+        labels[val] = val.toStringAsFixed(plot.crosshairFractionDigits);
       }
     }
   }
@@ -423,19 +406,19 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     debugLog('Initializing Plot');
     disposeValues();
 
-    _decimate = widget.plot.decimate ?? _calculateDecimate();
+    _decimate = plot.decimate ?? _calculateDecimate();
 
     double xMin = double.infinity;
     double xMax = double.negativeInfinity;
     double yMin = double.infinity;
     double yMax = double.negativeInfinity;
 
-    for (Graph graph in widget.plot.graphs) {
+    for (Graph graph in plot.graphs) {
 
-      graph.init(xLog: widget.plot.xLog, yLog: widget.plot.yLog);
+      graph.init(xLog: plot.xLog, yLog: plot.yLog);
 
-      _initCrosshairLabels(xCrosshairLabels, graph.X, widget.plot.xLog);
-      _initCrosshairLabels(yCrosshairLabels, graph.Y, widget.plot.yLog);
+      _initCrosshairLabels(xCrosshairLabels, graph.X, plot.xLog);
+      _initCrosshairLabels(yCrosshairLabels, graph.Y, plot.yLog);
 
       xMin = min(xMin, graph.X.reduce(min));
       xMax = max(xMax, graph.X.reduce(max));
@@ -450,17 +433,18 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
     _plotExtremes = PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
 
+    plot.onInit?.call(_plotExtremes);
 
-    _plotConstraints = widget.plot.constraints ?? PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
+    _plotConstraints = plot.constraints ?? PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
 
 
 
     _initXTicks();
     _initYTicks();
 
-    for (int j = 0; j < widget.plot.graphs.length; j++) {
+    for (int j = 0; j < plot.graphs.length; j++) {
 
-      final graph = widget.plot.graphs[j];
+      final graph = plot.graphs[j];
       final graphPaint = Paint()..color = graph.color ?? Colors.black..strokeWidth = graph.linethickness ?? 1;
 
       graphRenderPoints[graph] = [];
@@ -533,42 +517,58 @@ class FlutterPlotState extends State<FlutterPlotApp> {
     yCrosshairLabels.clear();
   }
 
+  @override
+  State<StatefulWidget> createState() => FlutterPlotState();
+
+}
+
+
+class FlutterPlotState extends State<PlotView> {
+  
+  int _moveFreq = 0;
+
+  bool _shiftDown = false;
+  bool _controlDown = false;
+
+
+  Offset _moveOffset = Offset.zero;
+
 
 
   void _handleMouseScroll(double dy) {
     if (_shiftDown) {
-      final constrained = _setXConstraints(dy);
+      final constrained = widget._setXConstraints(dy);
       if (constrained) {
         setState(() {
-          _resizePlot(true, false);
+          widget._resizePlot(true, false);
         });
       }
     }
     else if (_controlDown) {
-      final constrained = _setYConstraints(dy);
+      final constrained = widget._setYConstraints(dy);
       if (constrained) {
         setState(() {
-          _resizePlot(false, true);
+          widget._resizePlot(false, true);
         });
       }
     }
     else {
-      final xConstrained = _setXConstraints(dy);
-      final yConstrained = _setYConstraints(dy);
+      final xConstrained = widget._setXConstraints(dy);
+      final yConstrained = widget._setYConstraints(dy);
       if (xConstrained && yConstrained) {
         setState(() {
-          _resizePlot();        
+          widget._resizePlot();        
         });
 
       }
       else if (xConstrained) {
         setState(() {
-          _resizePlot(true, false);
+          widget._resizePlot(true, false);
         });
       }
       else if (yConstrained) {
         setState(() {
-          _resizePlot(false, true);
+          widget._resizePlot(false, true);
         });
       }
     }
@@ -576,51 +576,51 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
   void _handlePointerDown(PointerDownEvent event) {
     setState(() {
-      if (_checkAnnotationHit(event)) {
-        currentInteraction = Interaction.annotation;
-        _activeAnnotation?.onDragStarted?.call(_activeAnnotation!.coordinate!);
+      if (widget._checkAnnotationHit(event)) {
+        widget.currentInteraction = Interaction.annotation;
+        widget._activeAnnotation?.onDragStarted?.call(widget._activeAnnotation!.coordinate!);
       }
-      else if (_checkCrosshairHit(event)) {      
-        currentInteraction = Interaction.crosshair;
-        _activeCrosshair?.onDragStarted?.call(_activeCrosshair!.coordinate!);
+      else if (widget._checkCrosshairHit(event)) {      
+        widget.currentInteraction = Interaction.crosshair;
+        widget._activeCrosshair?.onDragStarted?.call(widget._activeCrosshair!.coordinate!);
       } 
       else {
-        currentInteraction = Interaction.graph;
+        widget.currentInteraction = Interaction.graph;
       }
     });
   }
 
   void _handlePointerUp(PointerUpEvent event) {
-    switch(currentInteraction) {
+    switch(widget.currentInteraction) {
       case Interaction.annotation:
-        _activeAnnotation?.onDragEnd?.call(_activeAnnotation!.coordinate!);
+        widget._activeAnnotation?.onDragEnd?.call(widget._activeAnnotation!.coordinate!);
         break;
       case Interaction.crosshair:
-        _activeCrosshair?.onDragEnd?.call(_activeCrosshair!.coordinate!);
+        widget._activeCrosshair?.onDragEnd?.call(widget._activeCrosshair!.coordinate!);
       case Interaction.graph:
         break;
     }
-    currentInteraction = Interaction.graph;
+    widget.currentInteraction = Interaction.graph;
   }
   
 
   void _handlePointerMove(PointerMoveEvent event) {
-    switch(currentInteraction) {
+    switch(widget.currentInteraction) {
       case Interaction.annotation:
-          _moveActiveAnnotation(event);
-          _annotationState.value++;
+          widget._moveActiveAnnotation(event);
+          widget._annotationState.value++;
         break;
       case Interaction.crosshair:
-          _moveActiveCrosshair(event);
-          _crosshairState.value++;
+          widget._moveActiveCrosshair(event);
+          widget._crosshairState.value++;
         break;
       case Interaction.graph:
           _moveFreq++;
           _moveOffset += event.localDelta;
-          if (_moveFreq >= _decimate) {
+          if (_moveFreq >= widget._decimate) {
             setState(() {
-              _movePlot(_moveOffset);
-              _resizePlot();
+              widget._movePlot(_moveOffset);
+              widget._resizePlot();
               _moveFreq = 0;
               _moveOffset = Offset.zero;
             });
@@ -646,17 +646,20 @@ class FlutterPlotState extends State<FlutterPlotApp> {
 
 
 
+
   @override
-  void didUpdateWidget(covariant FlutterPlotApp oldWidget) {
+  void didUpdateWidget(covariant PlotView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _init();
+    if (oldWidget.plot != widget.plot) {
+      widget._init();
+    }
   }
 
 
   @override
   void initState() {
     super.initState();
-    _init();
+    widget._init();
     HardwareKeyboard.instance.addHandler(_handleKeyDownUp);
   }
 
@@ -665,16 +668,16 @@ class FlutterPlotState extends State<FlutterPlotApp> {
   Widget build(BuildContext context) {   
       return Padding(
         padding: EdgeInsets.only(
-          left: sidePadding, 
-          bottom: overPadding,
-          right: sidePadding + 40,
-          top: overPadding
+          left: widget.sidePadding, 
+          bottom: widget.overPadding,
+          right: widget.sidePadding + 40,
+          top: widget.overPadding
         ),
         child: LayoutBuilder(
 
           builder: (context, windowConstraints) {   
             
-            _resizeWindow(windowConstraints);
+            widget._resizeWindow(windowConstraints);
 
             return Listener(
                   onPointerDown: (event) {
@@ -701,31 +704,48 @@ class FlutterPlotState extends State<FlutterPlotApp> {
                               width: windowConstraints.maxWidth,
                               height: windowConstraints.maxHeight,
                               child: CustomPaint(
-                                  foregroundPainter: GraphPainter(state: this),
-                                  painter: BackgroundPainter(state: this),
+                                  foregroundPainter: GraphPainter(
+                                    graphRenderPoints: widget.graphRenderPoints, 
+                                    width: widget.windowConstraints.maxWidth,
+                                    height: widget.windowConstraints.maxHeight),
+                                  painter: BackgroundPainter(
+                                    xTicks: widget._xTicks,
+                                    yTicks: widget._yTicks,
+                                    width: widget.windowConstraints.maxWidth,
+                                    height: widget.windowConstraints.maxHeight,
+                                    padding: widget.sidePadding
+                                    ),
                                   )
                         ),
                         RepaintBoundary(
                           child: ValueListenableBuilder(
-                            valueListenable: _crosshairState, 
+                            valueListenable: widget._crosshairState, 
                             builder: (context, coordinate, child) {
                              return SizedBox(
                                   width: windowConstraints.maxWidth,
                                   height: windowConstraints.maxHeight,
                                   child: CustomPaint(
-                                      painter: CrosshairPainter(state: this),
+                                      painter: CrosshairPainter(
+                                        pixelLUT: widget.pixelLUT,
+                                        xCrosshairLabels: widget.xCrosshairLabels,
+                                        yCrosshairLabels: widget.yCrosshairLabels,
+                                        graphs: widget.plot.graphs,
+                                        width: windowConstraints.maxWidth,
+                                        height: windowConstraints.maxHeight,
+                                        padding: widget.sidePadding,
+                                        ),
                                   )
                                 );
                             }),
                           ),
                         RepaintBoundary(
                           child: ValueListenableBuilder(
-                            valueListenable: _annotationState,
+                            valueListenable: widget._annotationState,
                             builder: (context, coordinate, child) {
                               return SizedBox(
                                 width: windowConstraints.maxWidth,
                                 height: windowConstraints.maxHeight,
-                                child:  AnnotationLayer(state: this, context: context),
+                                child:  AnnotationLayer(graphs: widget.plot.graphs, getPixelFromValue: widget.getPixelFromValue,),
                             );
                           }
                         )
@@ -738,95 +758,5 @@ class FlutterPlotState extends State<FlutterPlotApp> {
       }
     }
 
+    
 
-class Scaler {
-
-  double _pxMin = 0;
-  double _min = 0;
-  double _s = 0;
-
-  void setScaling(double min, double max, double pxMin, double pxMax) {
-
-    _min = min;
-    _pxMin = pxMin;
-    _s = (pxMax - pxMin) / (max - min);
-  }
-
-
-  double scale(double val) {
-      return (val -_min) * _s + _pxMin;
-  }
-
-  double inverse(double val) {
-      return (val - _pxMin) * (1/_s) + _min;
-  }
-
-  @override
-  bool operator ==(covariant Scaler other) {
-    return other._pxMin == _pxMin && other._min == _min && other._s == _s;
-  }
-
-  @override
-  int get hashCode => _s.hashCode;
-
-
-}
-
-class RenderPoint {
-
-  RenderPoint({
-    required this.pixel,
-    required this.paint,
-    required this.id,
-  });
-
-  Offset pixel;
-  final int id;
-  final Paint paint;
-
-  static RenderPoint get zero {
-    return RenderPoint(pixel: const Offset(0, 0), paint: Paint(), id: -1);
-  }
-
-  @override
-  bool operator ==(covariant RenderPoint other) {
-    return other.id == id;
-  }
-
-  @override
-  int get hashCode => paint.hashCode;
-
-}
-
-class PlotConstraints {
-
-  PlotConstraints({
-      required this.xMin,
-      required this.xMax,
-      required this.yMin,
-      required this.yMax,
-  });
-
-  double xMin;
-  double xMax;
-  double yMin;
-  double yMax;
-
-  bool get isFinite => xMin.isFinite && xMax.isFinite && yMin.isFinite && yMax.isFinite;
-
-
-  @override
-  bool operator ==(covariant PlotConstraints other) {
-    return other.xMin == xMin && other.xMax == xMax && other.yMin == yMin && other.yMax == yMax;
-  }
-
-  @override
-  int get hashCode => xMin.hashCode;
-
-}
-
-
-class FlutterPlotException implements Exception {
-  String cause;
-  FlutterPlotException(this.cause);
-}

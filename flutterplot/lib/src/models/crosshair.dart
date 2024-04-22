@@ -2,7 +2,7 @@
 
 import 'dart:ui';
 
-import 'package:flutterplot/src/plot_components/hittable_plot_object.dart';
+import 'package:flutterplot/src/models/hittable_plot_object.dart';
 
 
 /// A crosshair which can be attached to a FlutterPlot [Graph].
@@ -17,7 +17,7 @@ class Crosshair extends HittablePlotObject {
     {required this.label, 
     required this.yPadding,
     required this.color,
-    required super.active,
+    required this.active,
     super.width = 120,
     super.height = 70,
     super.coordinate,});
@@ -31,6 +31,8 @@ class Crosshair extends HittablePlotObject {
   /// The padding (in pixels) on the y-axis which seperates 
   /// the display box from the top of the plot.
   final double yPadding; 
+
+  bool active;
 
 
   /// The previous index which will be used for searching for the nearest point

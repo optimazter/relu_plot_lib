@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/app.dart';
+import 'package:flutterplot/src/widgets/plot_view.dart';
+import 'graph.dart';
+import 'plot_constraints.dart';
 
 /// A widget that displays a FlutterPlot Plot.
 /// 
@@ -43,6 +45,7 @@ class Plot extends StatelessWidget {
     this.numYTicks,
     this.constraints,
     this.decimate,
+    this.onInit,
     this.onResize,
     this.xLog = false,
     this.yLog = false,
@@ -88,8 +91,11 @@ class Plot extends StatelessWidget {
   /// If null, decimate will be calculated according to the screen refresh rate.
   final int? decimate;
 
+  /// Function called every time the Plot is initialized
+  final Function(PlotConstraints extremes)? onInit;
+
   /// Function called every time the Plot is resized
-  final Function(PlotConstraints)? onResize;
+  final Function(PlotConstraints constraints)? onResize;
 
   /// Determines if the x-axis should be in the log10 space.
   final bool xLog;
@@ -110,10 +116,29 @@ class Plot extends StatelessWidget {
   final int crosshairFractionDigits;
 
   @override
-  Widget build(BuildContext context) => FlutterPlotApp(plot: this);
+  Widget build(BuildContext context) => PlotView(plot: this);
 
 
-}
+  bool isEqualConfigTo(Plot other) =>
+    listEquals(graphs, other.graphs) &&
+    other.xUnit == xUnit &&
+    other.yUnit == yUnit &&
+    listEquals(xTicks, yTicks) &&
+    other.numXTicks == numXTicks &&
+    other.numYTicks == numYTicks &&
+    other.constraints == constraints &&
+    other.decimate == decimate &&
+    other.xLog == xLog &&
+    other.yLog == yLog &&
+    other.strokeWidth == strokeWidth &&
+    other.padding == padding &&
+    other.ticksFractionDigits == ticksFractionDigits;
+
+  }
+
+    
+
+
 
 
 

@@ -2,6 +2,7 @@
 import 'dart:collection';
 import 'dart:math';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterplot/flutterplot.dart';
 
@@ -73,7 +74,9 @@ class Graph {
       other is Graph &&
       other.runtimeType == runtimeType &&
       other._x == _x &&
-      other._y == _y;
+      other._y == _y &&
+      listEquals(other.crosshairs, crosshairs) &&
+      listEquals(other.annotations, annotations);
 
   @override
   int get hashCode => _x.hashCode * _y.hashCode;
