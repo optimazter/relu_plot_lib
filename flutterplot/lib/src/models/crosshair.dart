@@ -20,7 +20,9 @@ class Crosshair extends HittablePlotObject {
     required this.active,
     super.width = 120,
     super.height = 70,
-    super.coordinate,});
+    super.coordinate,
+    super.onDragStarted,
+    super.onDragEnd});
 
   /// The label to display for this crosshair.
   final String label;
@@ -32,8 +34,8 @@ class Crosshair extends HittablePlotObject {
   /// the display box from the top of the plot.
   final double yPadding; 
 
-  bool active;
 
+  bool active;
 
   /// The previous index which will be used for searching for the nearest point
   /// when moving the crosshair.
