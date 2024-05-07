@@ -15,7 +15,6 @@ class CrosshairPainter extends CustomPainter {
     required this.graphs,
     required this.width,
     required this.height,
-    required this.padding
     });
 
   final Map<Offset, RenderPoint> pixelLUT;
@@ -24,7 +23,6 @@ class CrosshairPainter extends CustomPainter {
   final List<Graph> graphs;
   final double width;
   final double height;
-  final double padding;
 
 
   @override
@@ -32,60 +30,68 @@ class CrosshairPainter extends CustomPainter {
 
     debugLog('Repainting Crosshairs');
 
-    final crosshairLinePaint = Paint();
-    final crosshairBoxPaint = Paint();
+    final linePaint = Paint();
+    final boxPaint = Paint();
     final textPainter = TextPainter(textDirection: TextDirection.ltr,);
-    
-    canvas.clipRect(Rect.fromLTRB(-padding, 0, width + padding, height));
+    final Rect clipRect = Rect.fromLTRB(0, 0, width, height);
+
+    canvas.clipRect(clipRect);
 
     for (var graph in graphs) {
 
       if (graph.crosshairs != null) {
 
         for (var crosshair in graph.crosshairs!) { 
-          crosshairLinePaint..color = Colors.black..strokeWidth = 1.3;
-          crosshairBoxPaint..color = crosshair.active ? crosshair.color : crosshair.color.withAlpha(150)..style = PaintingStyle.fill;
+          linePaint..color = Colors.black..strokeWidth = 1.3;
+          boxPaint..color = crosshair.active ? crosshair.color : crosshair.color.withAlpha(150)..style = PaintingStyle.fill;
           
-          _paintCrosshair(
+          Offset position = pixelLUT[crosshair.coordinate]!.pixel;
+
+          _paintCrosshairLine(canvas, position, linePaint);
+
+          textPainter.text = TextSpan(
+            style: const TextStyle(color: Colors.white), 
+            text: ' ${crosshair.label}\n  x: ${xCrosshairLabels[crosshair.coordinate!.dx]} \n  y: ${yCrosshairLabels[crosshair.coordinate!.dy]}');
+          textPainter.layout(
+                minWidth: 0,
+                maxWidth: crosshair.width,
+              );
+
+          _paintCrosshairBox(
             canvas, 
-            crosshair,
-            crosshairLinePaint, 
-            crosshairBoxPaint, 
+            position,
+            crosshair.width, 
+            crosshair.height,
+            crosshair.yPadding,
+            boxPaint,
             textPainter
             );
         }
       }
     }
   }
+
+  void _paintCrosshairLine(Canvas canvas, Offset position, Paint linePaint) {
+    canvas.drawLine(Offset(0, position.dy), Offset(width, position.dy), linePaint);
+    canvas.drawLine(Offset(position.dx, height), Offset(position.dx, 0), linePaint);
+
+  }
+
   
 
-  void _paintCrosshair(Canvas canvas, Crosshair crosshair, Paint linePaint, Paint boxPaint, TextPainter textPainter) {
+  void _paintCrosshairBox(Canvas canvas, Offset position, double width, double height, double yPadding,  Paint boxPaint, TextPainter textPainter) {
 
-      Offset pixelPosition = pixelLUT[crosshair.coordinate]!.pixel;
-
-      textPainter.text = TextSpan(
-          style: const TextStyle(color: Colors.white), 
-          text: ' ${crosshair.label}\n  x: ${xCrosshairLabels[crosshair.coordinate!.dx]} \n  y: ${yCrosshairLabels[crosshair.coordinate!.dy]}');
-        textPainter.layout(
-              minWidth: 0,
-              maxWidth: crosshair.width,
-            );
-
-      canvas.drawLine(Offset(0, pixelPosition.dy), Offset(width, pixelPosition.dy), linePaint);
-
-      canvas.drawLine(Offset(pixelPosition.dx, height), Offset(pixelPosition.dx, 0), linePaint);
-
-      canvas.drawCircle(pixelPosition, 5, boxPaint);
+      canvas.drawCircle(position, 5, boxPaint);
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(pixelPosition.dx, crosshair.yPadding + crosshair.height / 3), 
-            width: crosshair.width, 
-            height: crosshair.height), 
+          Rect.fromCenter(center: Offset(position.dx, yPadding + height / 3), 
+            width: width, 
+            height: height), 
           const Radius.circular(8)), boxPaint);
 
       //Crosshair text
-      textPainter.paint(canvas, Offset(pixelPosition.dx - crosshair.width / 2 + 7,   crosshair.yPadding));
+      textPainter.paint(canvas, Offset(position.dx - width / 2 + 7,   yPadding));
     }
 
 

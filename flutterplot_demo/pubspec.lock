@@ -224,7 +224,7 @@ packages:
     description:
       path: flutterplot
       ref: HEAD
-      resolved-ref: c1028114d16d9451abea2602f24d3953d38afd52
+      resolved-ref: "6e9f81f667467a95bb8eb61d10e6579485455647"
       url: "https://github.com/optimazter/flutterplot"
     source: git
     version: "0.0.1"

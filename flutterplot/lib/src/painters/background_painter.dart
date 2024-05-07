@@ -29,6 +29,9 @@ class BackgroundPainter extends CustomPainter {
     final secondaryLinePaint = Paint()..color = Colors.black..strokeWidth = 0.8;
     final linePaint = Paint()..color = const Color.fromARGB(210, 87, 85, 85)..strokeWidth = 1;
     final textPainter = TextPainter(textDirection: TextDirection.ltr,);
+    //final Rect clipRect = Rect.fromLTRB(0, 0, width, height);
+
+    //canvas.clipRect(clipRect);
 
     _paintBorders(canvas, width, height, primaryLinePaint, secondaryLinePaint);
     _paintGridLines(canvas, xTicks, yTicks, linePaint, textPainter);

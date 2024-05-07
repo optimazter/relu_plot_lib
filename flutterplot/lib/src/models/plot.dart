@@ -45,7 +45,6 @@ class Plot extends StatelessWidget {
     this.numYTicks,
     this.constraints,
     this.decimate,
-    this.onInit,
     this.onResize,
     this.xLog = false,
     this.yLog = false,
@@ -91,11 +90,8 @@ class Plot extends StatelessWidget {
   /// If null, decimate will be calculated according to the screen refresh rate.
   final int? decimate;
 
-  /// Function called every time the Plot is initialized
-  final Function(PlotConstraints extremes)? onInit;
-
   /// Function called every time the Plot is resized
-  final Function(PlotConstraints constraints)? onResize;
+  final Function(PlotConstraints constraints, PlotConstraints extremes)? onResize;
 
   /// Determines if the x-axis should be in the log10 space.
   final bool xLog;

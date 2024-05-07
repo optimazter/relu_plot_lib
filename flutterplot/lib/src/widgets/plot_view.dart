@@ -374,7 +374,7 @@ class PlotView extends StatefulWidget {
     _initXTicks();
     _initYTicks();
 
-    plot.onResize?.call(_plotConstraints);
+    plot.onResize?.call(_plotConstraints, _plotExtremes);
 
 
   }
@@ -433,11 +433,7 @@ class PlotView extends StatefulWidget {
 
     _plotExtremes = PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
 
-    plot.onInit?.call(_plotExtremes);
-
     _plotConstraints = plot.constraints ?? PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
-
-
 
     _initXTicks();
     _initYTicks();
@@ -709,8 +705,8 @@ class FlutterPlotState extends State<PlotView> {
                                     width: widget.windowConstraints.maxWidth,
                                     height: widget.windowConstraints.maxHeight),
                                   painter: BackgroundPainter(
-                                    xTicks: widget._xTicks,
-                                    yTicks: widget._yTicks,
+                                    xTicks: widget.xTicks,
+                                    yTicks: widget.yTicks,
                                     width: widget.windowConstraints.maxWidth,
                                     height: widget.windowConstraints.maxHeight,
                                     padding: widget.sidePadding
@@ -732,7 +728,6 @@ class FlutterPlotState extends State<PlotView> {
                                         graphs: widget.plot.graphs,
                                         width: windowConstraints.maxWidth,
                                         height: windowConstraints.maxHeight,
-                                        padding: widget.sidePadding,
                                         ),
                                   )
                                 );
