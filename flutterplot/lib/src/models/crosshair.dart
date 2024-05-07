@@ -28,7 +28,7 @@ class Crosshair extends HittablePlotObject {
   final String label;
 
   /// The color of the display box as well as circle for this crosshair.
-  final Color color;
+  Color color;
 
   /// The padding (in pixels) on the y-axis which seperates 
   /// the display box from the top of the plot.
