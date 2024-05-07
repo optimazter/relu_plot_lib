@@ -19,10 +19,10 @@ abstract class HittablePlotObject {
   Offset? coordinate;
 
   /// Function called every time the object drag has started
-  final Function(Offset)? onDragStarted;
+  final Function(HittablePlotObject obj)? onDragStarted;
 
   /// Function called every time the object has been moved
-  final Function(Offset)? onDragEnd;
+  final Function(HittablePlotObject obj)? onDragEnd;
 
 
 

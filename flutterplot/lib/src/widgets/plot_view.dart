@@ -574,11 +574,11 @@ class FlutterPlotState extends State<PlotView> {
     setState(() {
       if (widget._checkAnnotationHit(event)) {
         widget.currentInteraction = Interaction.annotation;
-        widget._activeAnnotation?.onDragStarted?.call(widget._activeAnnotation!.coordinate!);
+        widget._activeAnnotation?.onDragStarted?.call(widget._activeAnnotation!);
       }
       else if (widget._checkCrosshairHit(event)) {      
         widget.currentInteraction = Interaction.crosshair;
-        widget._activeCrosshair?.onDragStarted?.call(widget._activeCrosshair!.coordinate!);
+        widget._activeCrosshair?.onDragStarted?.call(widget._activeCrosshair!);
       } 
       else {
         widget.currentInteraction = Interaction.graph;
@@ -589,10 +589,10 @@ class FlutterPlotState extends State<PlotView> {
   void _handlePointerUp(PointerUpEvent event) {
     switch(widget.currentInteraction) {
       case Interaction.annotation:
-        widget._activeAnnotation?.onDragEnd?.call(widget._activeAnnotation!.coordinate!);
+        widget._activeAnnotation?.onDragEnd?.call(widget._activeAnnotation!);
         break;
       case Interaction.crosshair:
-        widget._activeCrosshair?.onDragEnd?.call(widget._activeCrosshair!.coordinate!);
+        widget._activeCrosshair?.onDragEnd?.call(widget._activeCrosshair!);
       case Interaction.graph:
         break;
     }
