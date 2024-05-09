@@ -18,8 +18,9 @@ jobs:
         
         - run: flutter pub get
 
-        - name: Test
+        - name: Enter flutterplot package
           run: cd flutterplot  
-          run: flutter test --coverage
+        - name: Run tests
+          run: flutter test  --coverage
 
                     
