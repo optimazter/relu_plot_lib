@@ -1,4 +1,4 @@
-name: FlutterPlot Test
+name: tests
 
 on:
     push:
