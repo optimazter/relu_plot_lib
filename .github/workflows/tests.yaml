@@ -1,0 +1,25 @@
+name: FlutterPlot Test
+
+on:
+    push:
+      branches:
+        - main
+  
+jobs:
+    test:
+        runs-on: macOS-latest
+
+        steps:
+        - uses: actions/checkout@v4
+
+        - uses: subosito/flutter-action@v2
+          with:
+            channel: 'stable'
+        
+        - run: flutter pub get
+
+        - name: Test
+          run: cd flutterplot  
+          run: flutter test --coverage
+
+                    
