@@ -1,8 +1,7 @@
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/widgets/plot_view.dart';
-
 
 
 
@@ -10,19 +9,27 @@ void main() {
 
   testWidgets(' ', (WidgetTester tester) async {
     await tester.pumpWidget(
-      PlotView(plot: 
-        Plot(
-          xTicks: const [1, 2],
-          yTicks: const [1, 2],
-          xTicksFractionDigits: 0,
-          yTicksFractionDigits: 0,
-          graphs: [
-            Graph(
-              x: [1, 2, 3, 4, 5], 
-              y: [1, 2, 3, 4, 5]
-          )],
-        )
-      )
-    );
-  });
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: Plot(
+                    graphs: [
+                      Graph(
+                        x: [0, 1000], 
+                        y: [0, 1000],
+                        annotations: [
+                          Annotation(
+                            child: const Text('test'),
+                            coordinate: const Offset(500, 500)),
+
+                        ]
+                    )],
+                  )
+                )),
+            )
+        );
+      });
+
+    
+    
 }
