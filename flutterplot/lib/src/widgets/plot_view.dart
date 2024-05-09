@@ -266,34 +266,35 @@ class PlotView extends StatefulWidget {
     _xTicks.clear();
     final ticks = plot.xTicks ?? _getXTicks();
     bool toLog = plot.xTicks != null;
-    _initTicks(ticks, _xTicks, _xScaler, plot.xUnit ?? '', plot.xLog, toLog, false);
+    _initTicks(ticks, _xTicks, _xScaler, plot.xUnit ?? '', plot.xLog, toLog, false, plot.xTicksFractionDigits);
   }
 
   void _initYTicks() {
     _yTicks.clear();
     final ticks = plot.yTicks ?? _getYTicks();
     bool toLog = plot.yTicks != null;
-    _initTicks(ticks, _yTicks, _yScaler, plot.yUnit ?? '', plot.yLog, toLog, true);
+    _initTicks(ticks, _yTicks, _yScaler, plot.yUnit ?? '', plot.yLog, toLog, true, plot.yTicksFractionDigits);
 
   }
 
-  String _toLogarithmicLabel(num valPow, String unit) {
+  String _toLogarithmicLabel(num valPow, String unit, int fractionDigits) {
+    
     switch (valPow) {
       case >= 1e12:
-        return '${(valPow / 1e12).toStringAsFixed(plot.ticksFractionDigits)} T$unit';
+        return '${(valPow / 1e12).toStringAsFixed(fractionDigits)} T$unit';
       case >= 1e9:
-        return '${(valPow / 1e9).toStringAsFixed(plot.ticksFractionDigits)} G$unit';
+        return '${(valPow / 1e9).toStringAsFixed(fractionDigits)} G$unit';
       case >= 1e6:
-        return '${(valPow / 1e6).toStringAsFixed(plot.ticksFractionDigits)} M$unit';
+        return '${(valPow / 1e6).toStringAsFixed(fractionDigits)} M$unit';
       case >= 1e3:
-        return '${(valPow / 1e3).toStringAsFixed(plot.ticksFractionDigits)} K$unit';
+        return '${(valPow / 1e3).toStringAsFixed(fractionDigits)} K$unit';
       default:
-        return '${valPow.toStringAsFixed(plot.ticksFractionDigits)} $unit';
+        return '${valPow.toStringAsFixed(fractionDigits)} $unit';
     }
 
   }
 
-  void _initTicks(List<double> ticks, Map<String, double> labels, Scaler scaler, String unit, bool isLog, bool toLog, bool y) {
+  void _initTicks(List<double> ticks, Map<String, double> labels, Scaler scaler, String unit, bool isLog, bool toLog, bool y, int fractionDigits) {
     for (int i = 0; i < ticks.length; i++) {
       String label;
       double val = ticks[i];
@@ -305,9 +306,9 @@ class PlotView extends StatefulWidget {
         } else {
           valPow = pow(e, val*ln10);
         }
-        label = _toLogarithmicLabel(valPow, unit);
+        label = _toLogarithmicLabel(valPow, unit, fractionDigits);
       } else {
-        label = '${val.toStringAsFixed(plot.ticksFractionDigits)} $unit';
+        label = '${val.toStringAsFixed(fractionDigits)} $unit';
       }
       if (y) {
         labels[label] = windowConstraints.maxHeight - scaler.scale(val);
