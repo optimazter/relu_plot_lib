@@ -50,7 +50,8 @@ class Plot extends StatelessWidget {
     this.yLog = false,
     this.strokeWidth = 1,
     this.padding = 0,
-    this.ticksFractionDigits = 3,
+    this.xTicksFractionDigits = 0,
+    this.yTicksFractionDigits = 0,
     this.crosshairFractionDigits = 2,
   });
 
@@ -105,8 +106,11 @@ class Plot extends StatelessWidget {
   /// The padding to use around the plot borders
   final double padding;
 
-  /// The number of digits to use for [xTicks] and [yTicks].
-  final int ticksFractionDigits;
+  /// The number of digits to use for [xTicks].
+  final int xTicksFractionDigits;
+
+  /// The number of digits to use for [xTicks].
+  final int yTicksFractionDigits;
 
   /// The number of digits to use for FlutterPlot crosshair
   final int crosshairFractionDigits;
@@ -128,7 +132,8 @@ class Plot extends StatelessWidget {
     other.yLog == yLog &&
     other.strokeWidth == strokeWidth &&
     other.padding == padding &&
-    other.ticksFractionDigits == ticksFractionDigits;
+    other.xTicksFractionDigits == xTicksFractionDigits &&
+    other.yTicksFractionDigits == yTicksFractionDigits;
 
   }
 
