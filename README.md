@@ -1,4 +1,4 @@
-![workflow](https://github.com/optimazter/flutterplot/workflows/tests.yaml/badge.svg)
+![workflow](https://github.com/optimazter/flutterplot/workflows/tests/badge.svg)
 
 # FlutterPlot
 # (NOTE: UNDER DEVELOPMENT)
