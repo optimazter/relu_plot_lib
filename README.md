@@ -1,9 +1,7 @@
-![workflow]
-(https://github.com/optimazter/flutterplot/workflows/tests.yaml/badge.svg)
+![workflow](https://github.com/optimazter/flutterplot/workflows/tests.yaml/badge.svg)
 
 # FlutterPlot
 # (NOTE: UNDER DEVELOPMENT)
-
 
 FlutterPlot is a simple graph tool for flutter desktop applications. 
 
