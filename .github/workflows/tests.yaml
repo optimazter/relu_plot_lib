@@ -15,11 +15,9 @@ jobs:
         - uses: subosito/flutter-action@v2
           with:
             channel: 'stable'
-        
-        - run: flutter pub get
-
         - name: Enter flutterplot package
           run: cd flutterplot  
+        - run: flutter pub get
         - name: Run tests
           run: flutter test  --coverage
 
