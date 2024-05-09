@@ -16,8 +16,9 @@ jobs:
           with:
             channel: 'stable'
             
-        - run: |
-            cd client
+        - name: Run Tests
+          working-directory: ./flutterplot
+          run: |
             flutter pub get
             flutter test
 
