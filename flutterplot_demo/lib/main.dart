@@ -57,7 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
             xUnit: 'Hz',
             yUnit: 'dB',
             xLog: true,
-            ticksFractionDigits: 0,
             numYTicks: 5,
             graphs: [
               Graph(

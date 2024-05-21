@@ -21,7 +21,6 @@ void main() {
                           Annotation(
                             child: const Text('test'),
                             coordinate: const Offset(500, 500)),
-
                         ]
                     )],
                   )
@@ -30,6 +29,6 @@ void main() {
         );
       });
 
-    
+
     
 }
