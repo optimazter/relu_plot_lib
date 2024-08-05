@@ -1,10 +1,9 @@
-
-import 'dart:collection';
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterplot/flutterplot.dart';
+import 'package:flutterplot/src/models/annotation.dart';
+import 'package:flutterplot/src/utils/utils.dart';
 
 /// A graph which can be painted in a FlutterPlot [Plot] object
 /// 
@@ -13,27 +12,23 @@ import 'package:flutterplot/flutterplot.dart';
 
 class Graph {
 
-  Graph( {
-    required x, 
-    required y,
+  const Graph({
+    required this.x, 
+    required this.y,
     this.color,
-    this.linethickness,
     this.annotations,
     this.crosshairs, 
-    }
-  ) : _xUnmodified = x, _yUnmodified = y;
+  }) : 
+  assert(x.length == y.length, 'Graph [x] and [y] must be of equal length, but found ${x.length} x-values and ${y.length} y-values');
 
-  /// The x coordinates of the graph.
-  final List<num> _xUnmodified;
+  /// x-values
+  final List<double> x;
 
-  /// The y coordinates of the graph.
-  final List<num> _yUnmodified;
+  /// y-values
+  final List<double> y;
 
   /// The color of the graph.
   final Color? color;
-
-  /// The linethickness of the graph.
-  final double? linethickness;
 
   /// The Annotations which will be attached to this graph.
   final List<Annotation>? annotations;
@@ -42,44 +37,33 @@ class Graph {
   final List<Crosshair>? crosshairs;
 
 
-  final List<double> _x = [];
-  final List<double> _y = [];
-
-  UnmodifiableListView<double> get X => UnmodifiableListView(_x);
-  UnmodifiableListView<double> get Y => UnmodifiableListView(_y);
 
 
-  /// Initializes the graph in either the log space or as is.
-  void init({bool xLog = false, bool yLog = false}) {
-    if (_x.length != _xUnmodified.length) {
-      if (xLog) {
-        _x.addAll(_xUnmodified.map((x) => log(x) / ln10));
-      } else {
-        _x.addAll(_xUnmodified.map((x) => x.toDouble()));
+  void toLog(bool xLog, bool yLog) {
+    if (xLog) {
+      for (int i = 0; i < x.length; i++) {
+        x[i] = x[i].toLog10();
       }
     }
-    if (_y.length != _yUnmodified.length) {
-      if (yLog) {
-        _y.addAll(_yUnmodified.map((y) => log(y) / ln10));
-      } else {
-        _y.addAll(_yUnmodified.map((y) => y.toDouble()));
+    if (yLog) {
+      for (int i = 0; i < x.length; i++) {
+        y[i] = y[i].toLog10();
       }
     }
   }
-
 
 
   @override
   bool operator ==(Object other) =>
       other is Graph &&
       other.runtimeType == runtimeType &&
-      other._x == _x &&
-      other._y == _y &&
+      listEquals(other.x, x) &&
+      listEquals(other.y, y) &&
       listEquals(other.crosshairs, crosshairs) &&
       listEquals(other.annotations, annotations);
 
   @override
-  int get hashCode => _x.hashCode * _y.hashCode;
+  int get hashCode => x.hashCode * y.hashCode;
   
   
 

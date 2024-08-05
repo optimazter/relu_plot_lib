@@ -1,28 +1,29 @@
+import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/painters/render_point.dart';
-import 'package:flutterplot/src/utils.dart';
-
-
+import 'package:flutterplot/src/utils/utils.dart';
 
 
 class CrosshairPainter extends CustomPainter {
 
   const CrosshairPainter({
-    required this.pixelLUT,
-    required this.xCrosshairLabels,
-    required this.yCrosshairLabels,
-    required this.graphs,
-    required this.width,
-    required this.height,
-    });
+    required this.crosshairs,
+    required this.fractionDigits,
+    required this.xUnit,
+    required this.yUnit,
+    required this.logarithmicXLabel,
+    required this.logarithmicYLabel,
+    required this.transform,
+  });
 
-  final Map<Offset, RenderPoint> pixelLUT;
-  final Map<double, String> xCrosshairLabels;
-  final Map<double, String> yCrosshairLabels;
-  final List<Graph> graphs;
-  final double width;
-  final double height;
+  final List<Crosshair> crosshairs;
+  final int fractionDigits;
+  final String? xUnit;
+  final String? yUnit;
+  final bool logarithmicXLabel;
+  final bool logarithmicYLabel;
+  final Matrix4 transform;
 
 
   @override
@@ -30,79 +31,82 @@ class CrosshairPainter extends CustomPainter {
 
     debugLog('Repainting Crosshairs');
 
+
     final linePaint = Paint();
     final boxPaint = Paint();
-    final textPainter = TextPainter(textDirection: TextDirection.ltr,);
-    final Rect clipRect = Rect.fromLTRB(0, 0, width, height);
+    final TextStyle textStyle = TextStyle(
+          color:  Colors.black, 
+    );
 
-    canvas.clipRect(clipRect);
 
-    for (var graph in graphs) {
 
-      if (graph.crosshairs != null) {
+    crosshairs.forEach((crosshair) {
+      final Offset globalPosition = transform.transformOffset(crosshair.position);
+      linePaint..color = Colors.black;
+      boxPaint..color = crosshair.color..style = PaintingStyle.fill;
+      
+      canvas.save();
+      canvas.clipRect(Rect.fromLTRB(0, 0, size.width, size.height));
+      _paintCrosshairLine(canvas, size, globalPosition, crosshair.yPadding, linePaint, boxPaint);
+      canvas.restore();
 
-        for (var crosshair in graph.crosshairs!) { 
-          linePaint..color = Colors.black..strokeWidth = 1.3;
-          boxPaint..color = crosshair.active ? crosshair.color : crosshair.color.withAlpha(150)..style = PaintingStyle.fill;
-          
-          Offset position = pixelLUT[crosshair.coordinate]!.pixel;
-
-          _paintCrosshairLine(canvas, position, linePaint);
-
-          textPainter.text = TextSpan(
-            style: const TextStyle(color: Colors.white), 
-            text: ' ${crosshair.label}\n  x: ${xCrosshairLabels[crosshair.coordinate!.dx]} \n  y: ${yCrosshairLabels[crosshair.coordinate!.dy]}');
-          textPainter.layout(
-                minWidth: 0,
-                maxWidth: crosshair.width,
-              );
-
-          _paintCrosshairBox(
-            canvas, 
-            position,
-            crosshair.width, 
-            crosshair.height,
-            crosshair.yPadding,
-            boxPaint,
-            textPainter
-            );
-        }
-      }
-    }
+      canvas.save();
+      canvas.clipRect(Rect.fromLTRB(-crosshair.halfWidth, -crosshair.halfHeight, size.width + crosshair.halfWidth, size.height + crosshair.halfHeight));
+      _paintCrosshairBox(canvas, globalPosition, crosshair.width, crosshair.height, crosshair.yPadding, boxPaint);
+      _paintCrosshairText(canvas, crosshair.label, crosshair.position, globalPosition, crosshair.yPadding, textStyle, crosshair.width);
+      canvas.restore();
+    });
+ 
   }
 
-  void _paintCrosshairLine(Canvas canvas, Offset position, Paint linePaint) {
-    canvas.drawLine(Offset(0, position.dy), Offset(width, position.dy), linePaint);
-    canvas.drawLine(Offset(position.dx, height), Offset(position.dx, 0), linePaint);
+  void _paintCrosshairLine(Canvas canvas, Size size, Offset globalPosition, double padding, Paint linePaint, Paint boxPaint) {
+    canvas.drawCircle(globalPosition, 5, boxPaint);
+    canvas.drawLine(Offset(0, globalPosition.dy), Offset(size.width, globalPosition.dy), linePaint);
+    canvas.drawLine(Offset(globalPosition.dx, padding), Offset(globalPosition.dx, size.height), linePaint);
+  }
+
+
+  void _paintCrosshairText(Canvas canvas, String label, Offset localPosition, Offset globalPosition, double padding, TextStyle textStyle, double width) {
+    final ParagraphBuilder paragraphBuilder = ParagraphBuilder(
+            ParagraphStyle()
+          )
+          ..pushStyle(textStyle.getTextStyle())
+          ..addText(' ${label}\n  x: ${
+            logarithmicXLabel ? pow(10, localPosition.dx).toStringAsFixed(fractionDigits) : (localPosition.dx).toStringAsFixed(fractionDigits) 
+            } ${
+              xUnit ?? ''
+            } \n  y: ${
+            logarithmicYLabel ? pow(10, localPosition.dy).toStringAsFixed(fractionDigits) : localPosition.dy.toStringAsFixed(fractionDigits)
+            } ${
+              yUnit ?? ''}'
+    );
+    final Paragraph paragraph = paragraphBuilder.build()
+    ..layout(ParagraphConstraints(width: width));
+
+    canvas.drawParagraph(paragraph, Offset(globalPosition.dx - width / 2, padding));
 
   }
 
   
 
-  void _paintCrosshairBox(Canvas canvas, Offset position, double width, double height, double yPadding,  Paint boxPaint, TextPainter textPainter) {
-
-      canvas.drawCircle(position, 5, boxPaint);
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(position.dx, yPadding + height / 3), 
-            width: width, 
-            height: height), 
-          const Radius.circular(8)), boxPaint);
-
-      //Crosshair text
-      textPainter.paint(canvas, Offset(position.dx - width / 2 + 7,   yPadding));
-    }
+  void _paintCrosshairBox(Canvas canvas, Offset globalPosition, double width, double height, double yPadding, Paint boxPaint) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(globalPosition.dx, yPadding + height / 3), 
+          width: width, 
+          height: height), 
+        const Radius.circular(8)), boxPaint
+    );
+  }
 
 
 
 
   @override
   bool shouldRepaint(covariant CrosshairPainter oldDelegate) {
-
     return true;
-
   }
+
 
 
 }

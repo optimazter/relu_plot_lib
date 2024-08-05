@@ -1,41 +1,55 @@
-
-
 import 'dart:ui';
-
-import 'package:flutterplot/src/models/hittable_plot_object.dart';
-
 
 /// A crosshair which can be attached to a FlutterPlot [Graph].
 /// 
 /// The crosshair can be moved around on the graph by dragging the mouse 
 /// while pressing the left mouse button. The crosshair will display the 
-/// coordinate (x,y) where the crosshair is located on the graph.
+/// position (x,y) where the crosshair is located on the graph.
 /// 
-class Crosshair extends HittablePlotObject {
+class Crosshair  {
 
   Crosshair(
     {required this.label, 
     required this.yPadding,
     required this.color,
-    required this.active,
-    super.width = 120,
-    super.height = 70,
-    super.coordinate,
-    super.onDragStarted,
-    super.onDragEnd});
+    this.width = 120,
+    this.height = 70,
+    this.position = Offset.infinite,
+    this.onDragStarted,
+    this.onDragEnd,})
+    : halfWidth = width / 2, 
+    halfHeight = height / 2;
 
   /// The label to display for this crosshair.
   final String label;
-
-  /// The color of the display box as well as circle for this crosshair.
-  Color color;
 
   /// The padding (in pixels) on the y-axis which seperates 
   /// the display box from the top of the plot.
   final double yPadding; 
 
+  /// The color of the display box as well as circle for this crosshair.
+  Color color;
 
-  bool active;
+  /// The width of the Crosshair
+  final double width;
+
+  /// The height of the Crosshair
+  final double height;
+
+  /// The [width] divided by 2
+  final double halfWidth;
+
+  /// The [height] divided by 2
+  final double halfHeight;
+
+  /// The position in the Plot space where the Crosshair is lcoated
+  Offset position;
+
+  /// Function called every time the Crosshair drag has started
+  final Function(Crosshair crosshair)? onDragStarted;
+
+  /// Function called every time the Crosshair has been moved
+  final Function(Crosshair crosshair)? onDragEnd;
 
   /// The previous index which will be used for searching for the nearest point
   /// when moving the crosshair.
@@ -46,14 +60,16 @@ class Crosshair extends HittablePlotObject {
   @override
   bool operator ==(Object other) =>
       other is Crosshair &&
+      other.width == width &&
+      other.height == height &&
       other.runtimeType == runtimeType &&
-      other.coordinate == coordinate &&
+      other.position == position &&
       other.label == label;
 
 
 
   @override
-  int get hashCode => label.hashCode * coordinate.hashCode;
+  int get hashCode => label.hashCode * position.hashCode;
 
   
 
