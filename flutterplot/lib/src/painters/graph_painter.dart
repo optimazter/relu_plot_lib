@@ -1,53 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
-import 'package:flutterplot/src/painters/render_point.dart';
-import 'package:flutterplot/src/utils.dart';
-
 
 class GraphPainter extends CustomPainter {
 
+
   const GraphPainter({
-    required this.graphRenderPoints,
-    required this.width,
-    required this.height,
+    required this.graphPaths, 
+    required this.transform, 
+    });
 
-  });
 
-  final Map<Graph, List<RenderPoint>> graphRenderPoints;
-  final double width;
-  final double height;
+  final Map<Graph, Path> graphPaths;
+  final Matrix4 transform;
 
-  
+
+
+
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.clipRect(Rect.fromLTRB(0, 0, size.width, size.height));
+    canvas.transform(transform.storage);
 
-    debugLog('Repainting Graphs');
+    graphPaths.forEach((graph, path) {
 
-    canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
+      final paint = Paint()..color = graph.color ?? Color(0x00000000);
+      paint.style = PaintingStyle.stroke;
+      canvas.drawPath(path, paint);
 
-    graphRenderPoints.forEach((key, values) {
-        _paintGraphs(canvas, values);
-    },);
+    }); 
 
+    canvas.restore();
   }
 
-
-  void _paintGraphs(Canvas canvas, List<RenderPoint> renderPoints) {
-
-    for (int i = 0; i < renderPoints.length - 1; i++) { 
-
-      canvas.drawLine(renderPoints[i].pixel, renderPoints[i + 1].pixel, renderPoints[i].paint);
-
-    }
-  }
-    
 
   @override
-  bool shouldRepaint(covariant GraphPainter oldDelegate) {
-
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
-
   }
 
 
+  
 }

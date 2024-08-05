@@ -38,9 +38,10 @@ dependencies:
 
 
   flutterplot: 
-    git:
-      url: https://github.com/optimazter/flutterplot
-      path: flutterplot
+    path: ../flutterplot
+    # git:
+    #   url: https://github.com/optimazter/flutterplot
+    #   path: flutterplot
 
 dev_dependencies:
   flutter_test:

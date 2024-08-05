@@ -1,5 +1,8 @@
 
 
+
+import 'dart:ui';
+
 class PlotConstraints {
 
   PlotConstraints({
@@ -9,10 +12,21 @@ class PlotConstraints {
       required this.yMax,
   });
 
-  double xMin;
-  double xMax;
-  double yMin;
-  double yMax;
+  PlotConstraints.fromMinMax({
+    required Offset min,
+    required Offset max,
+  }) {
+    xMin = min.dx;
+    xMax = max.dx;
+    yMin = min.dy;
+    yMax = max.dy;
+  }
+
+  late final double xMin;
+  late final double xMax;
+  late final double yMin;
+  late final double yMax;
+
 
   bool get isFinite => xMin.isFinite && xMax.isFinite && yMin.isFinite && yMax.isFinite;
 

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutterplot/src/models/ticks.dart';
 import 'package:flutterplot/src/widgets/plot_view.dart';
 import 'graph.dart';
 import 'plot_constraints.dart';
@@ -29,59 +30,40 @@ import 'plot_constraints.dart';
 /// ],)
 ///  ```
 /// {@end-tool}
+/// 
+/// Navigate around the plot by using a mouse or toch pad.
+/// The Plot can be scaled with scrolling/panning a mouse or touchpad.
+/// The Plot can be scaled on x-axis only by pressing shift + scroll/panning.
+/// The Plot can be scaled on y-axis only by pressing ctrl + scroll/panning.
 
 
 class Plot extends StatelessWidget {
+
    ///Creates a widget that displays a FlutterPlot Plot
   
   const Plot({
     super.key,
     required this.graphs,
-    this.xUnit,
-    this.yUnit, 
     this.xTicks,
     this.yTicks,
-    this.numXTicks,
-    this.numYTicks,
     this.constraints,
     this.decimate,
     this.onResize,
-    this.xLog = false,
-    this.yLog = false,
     this.strokeWidth = 1,
     this.padding = 0,
-    this.xTicksFractionDigits = 0,
-    this.yTicksFractionDigits = 0,
     this.crosshairFractionDigits = 2,
   });
 
 
+
   /// The FlutterPlot graphs to paint.
   final List<Graph> graphs;
-  
-  /// The label which will annotate [xTicks].
-  final String? xUnit;
 
-  /// The label which will annotate [yTicks].
-  final String? yUnit;
+  /// The ticks which will annotate the x-axis.
+  final Ticks? xTicks;
 
-  /// The list of ticks for the x-axis.
-  final List<double>? xTicks;
-
-  /// The list of ticks for the y-axis.
-  final List<double>? yTicks;
-
-  /// Number of ticks for the x-axis.
-  /// 
-  /// Is only used for automatic generation of ticks,
-  /// will not be used if [xTicks] is used.
-  final int? numXTicks;
-
-  /// Number of ticks for the y-axis.
-  /// 
-  /// Is only used for automatic generation of ticks,
-  /// will not be used if [yTicks] is used.
-  final int? numYTicks;
+  /// The ticks which will annotate the y-axis.
+  final Ticks? yTicks;
 
   /// Initial Plot constraints
   final PlotConstraints? constraints;
@@ -94,47 +76,39 @@ class Plot extends StatelessWidget {
   /// Function called every time the Plot is resized
   final Function(PlotConstraints constraints, PlotConstraints extremes)? onResize;
 
-  /// Determines if the x-axis should be in the log10 space.
-  final bool xLog;
-
-  /// Determines if the y-axis should be in the log10 space.
-  final bool yLog;
-
   /// The width of the graph lines
   final double strokeWidth;
 
   /// The padding to use around the plot borders
   final double padding;
 
-  /// The number of digits to use for [xTicks].
-  final int xTicksFractionDigits;
-
-  /// The number of digits to use for [xTicks].
-  final int yTicksFractionDigits;
-
   /// The number of digits to use for FlutterPlot crosshair
   final int crosshairFractionDigits;
 
   @override
-  Widget build(BuildContext context) => PlotView(plot: this);
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => PlotView(
+      plot: this, 
+      width: constraints.maxWidth,
+      height: constraints.maxHeight,
+    )
+  );
 
 
   bool isEqualConfigTo(Plot other) =>
     listEquals(graphs, other.graphs) &&
-    other.xUnit == xUnit &&
-    other.yUnit == yUnit &&
-    listEquals(xTicks, yTicks) &&
-    other.numXTicks == numXTicks &&
-    other.numYTicks == numYTicks &&
+    other.xTicks == xTicks &&
+    other.yTicks == yTicks &&
     other.constraints == constraints &&
     other.decimate == decimate &&
-    other.xLog == xLog &&
-    other.yLog == yLog &&
     other.strokeWidth == strokeWidth &&
     other.padding == padding &&
-    other.xTicksFractionDigits == xTicksFractionDigits &&
-    other.yTicksFractionDigits == yTicksFractionDigits;
+    other.crosshairFractionDigits == crosshairFractionDigits;
 
+
+    void toLog(bool xLog, bool yLog) {
+      graphs.forEach((graph) => graph.toLog(xLog, yLog));
+    }
   }
 
     

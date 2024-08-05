@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
 
@@ -35,14 +36,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 
+
   @override
   Widget build(BuildContext context) {
 
-    final x1 = List<double>.generate(10000, (i) => i + 1);
-    final y1 = x1.map((x) => 2 * x + 3).toList();
-
-    final x2 = List<double>.generate(10000, (i) => i + 1);
-    final y2 = x2.map((x) => x + 2).toList();
+    final x = List<double>.generate(10000, (i) => i + 1.0);
+    final List<double> y = List.from(x);
 
     return Scaffold(
       appBar: AppBar(
@@ -51,58 +50,52 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(30),
+          padding: EdgeInsets.all(30),
           child: Plot(
-            padding: 30,
-            xUnit: 'Hz',
-            yUnit: 'dB',
-            xLog: true,
-            numYTicks: 5,
-            graphs: [
-              Graph(
-                x: x1, 
-                y: y1,
-                color: Colors.blue,
-                crosshairs: [
-                  Crosshair(
-                    label: 'Crosshair 1', 
-                    active: true, 
-                    yPadding: 10, 
-                    color: Colors.blue
+              padding: 0,
+              xTicks: Ticks(
+                pretty: true, 
+                logarithmic: true
+                ),
+              yTicks: Ticks(
+                pretty: true, 
+                logarithmic: false
+                ),
+              graphs: [
+                Graph(
+                  x: x, 
+                  y: y,
+                  color: Colors.blue,
+                  crosshairs: [
+                    Crosshair(
+                      label: 'Crosshair', 
+                      yPadding: 20, 
+                      color: Colors.red
+                    )
+                  ],
+                  annotations: [
+                    Annotation(
+                      width: 100,
+                      height: 100,
+                      child: Card.filled(
+                        child: SizedBox(
+                          width: 100,
+                          height: 70,
+                          child: Center(
+                            child: Text(
+                              'This is an annotation!', 
+                              textAlign: TextAlign.center,
+                            )
+                          ),
+                        ),
+                        color: Colors.red
+                      ),
                     ),
-                    ],
-                annotations: [
-                  Annotation(
-                    width: 120,
-                    height: 100,
-                    child: const Card.filled(
-                    color: Colors.blue,
-                    child: Padding(
-                      padding: EdgeInsets.all(5),
-                      child: Text(
-                      'This is an annotation.'
-                    ),
-                  )
-                )
-                )
-                ]
-              ),
-              Graph(
-                x: x2,
-                y: y2,
-                color: Colors.red,
-                crosshairs: [
-                  Crosshair(
-                      label: 'Crosshair 2',
-                      active: false,
-                      yPadding: 100,
-                      color: Colors.red,
-                  )
-                ]
-              )
+                  ]
+                ),
               ],
         )
-       )
+        )
       ),
     );
   }
