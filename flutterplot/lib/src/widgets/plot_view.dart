@@ -139,18 +139,20 @@ class PlotView extends StatefulWidget {
 
   void _moveActiveCrosshair(PointerMoveEvent event) {
     if (_activeCrosshair != null) {
-      final int? i = _getXIndexFromPixel(_activeGraph!, event.localPosition.dx, event.localDelta.dx, _activeCrosshair!.prevIndex);
+      event = event.transformed(camera.transformInverted);
+      final Offset localPosition = _activeCrosshair!.position + event.localDelta;
+      final int? i = _getXIndexFromPixel(_activeGraph!, localPosition.dx, event.localDelta.dx, _activeCrosshair!.prevIndex);
       if (i != null) {
         _activeCrosshair!.position = Offset(_activeGraph!.x[i], _activeGraph!.y[i]);
         _activeCrosshair!.prevIndex = i;  
       }
+    
     }     
-
   }
 
 
-  int? _getXIndexFromPixel(Graph graph, double pxX,  double dx, int prevIndex) {
-    double x = pxX;
+  int? _getXIndexFromPixel(Graph graph, double x, double dx, int prevIndex) {
+
     if (x <= plotExtremes.xMin) {
       return 0;
     }

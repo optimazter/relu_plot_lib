@@ -74,6 +74,8 @@ class AnnotationRenderObject extends RenderBox with ContainerRenderObjectMixin<R
   void paint(PaintingContext context, Offset offset) {
     RenderBox? child = firstChild;
     context.canvas.save();
+    context.canvas.clipRect(Rect.fromLTRB(offset.dx, offset.dy, offset.dx + constraints.maxWidth, offset.dy + constraints.maxHeight));
+
     context.canvas.translate(-constraints.maxWidth / 2, -constraints.maxHeight / 2);
 
     while (child != null) {
