@@ -99,7 +99,6 @@ class TicksPainter extends CustomPainter {
       final Paragraph paragraph = paragraphBuilder.build()
       ..layout(ParagraphConstraints(width: size.width));
 
-
       canvas.drawParagraph(paragraph, Offset(0, yTicks[i]));
     }
 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
 
@@ -52,48 +51,47 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Padding(
           padding: EdgeInsets.all(30),
           child: Plot(
-              padding: 0,
-              xTicks: Ticks(
-                pretty: true, 
-                logarithmic: true
-                ),
-              yTicks: Ticks(
-                pretty: true, 
-                logarithmic: false
-                ),
-              graphs: [
-                Graph(
-                  x: x, 
-                  y: y,
-                  color: Colors.blue,
-                  crosshairs: [
-                    Crosshair(
-                      label: 'Crosshair', 
-                      yPadding: 20, 
-                      color: Colors.red
-                    )
-                  ],
-                  annotations: [
-                    Annotation(
-                      width: 100,
-                      height: 100,
-                      child: Card.filled(
-                        child: SizedBox(
-                          width: 100,
-                          height: 70,
-                          child: Center(
-                            child: Text(
-                              'This is an annotation!', 
-                              textAlign: TextAlign.center,
-                            )
-                          ),
+            xTicks: Ticks(
+              pretty: true, 
+              logarithmic: true
+              ),
+            yTicks: Ticks(
+              pretty: true, 
+              logarithmic: false
+              ),
+            graphs: [
+              Graph(
+                x: x, 
+                y: y,
+                color: Colors.blue,
+                crosshairs: [
+                  Crosshair(
+                    label: 'Crosshair', 
+                    yPadding: 20, 
+                    color: Colors.red
+                  )
+                ],
+                annotations: [
+                  Annotation(
+                    width: 100,
+                    height: 100,
+                    child: Card.filled(
+                      child: SizedBox(
+                        width: 100,
+                        height: 70,
+                        child: Center(
+                          child: Text(
+                            'This is an annotation!', 
+                            textAlign: TextAlign.center,
+                          )
                         ),
-                        color: Colors.red
                       ),
+                      color: Colors.red
                     ),
-                  ]
-                ),
-              ],
+                  ),
+                ]
+              ),
+            ],
         )
         )
       ),

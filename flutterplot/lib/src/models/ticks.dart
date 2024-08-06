@@ -53,6 +53,7 @@ class Ticks {
   final List<String> _labels = [];
 
   List<double> get ticks => _ticks;
+
   List<String> get labels => _labels;
   
 
@@ -60,7 +61,6 @@ class Ticks {
     if (empty) {
       return null;
     }
-
     _ticks.clear();
     _labels.clear();
 

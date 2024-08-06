@@ -41,6 +41,8 @@ class PlotView extends StatefulWidget {
   late final PlotConstraints plotExtremes;
   late final Camera camera;
 
+  late final int decimate;
+
 
   Interaction currentInteraction = Interaction.crosshair;
 
@@ -48,8 +50,6 @@ class PlotView extends StatefulWidget {
   Annotation? _activeAnnotation;
   Crosshair? _activeCrosshair;
   Graph? _activeGraph;
-
-  int _decimate = 0;
 
 
   double get paddingL => plot.padding; 
@@ -65,7 +65,7 @@ class PlotView extends StatefulWidget {
 
   List<Annotation> get annotations => plot.graphs.map((graph) => graph.annotations ?? []).expand((annotation) => annotation).toList();
 
-
+  
   void init() {
     debugLog('Initializing Plot');
     _disposeValues();
@@ -79,7 +79,15 @@ class PlotView extends StatefulWidget {
   }
 
 
+  void movePlot(Offset moveOffset) {
+    camera.move(moveOffset.dx, moveOffset.dy);
+    plot.onConstraintsChanged?.call(camera.localConstraints, plotExtremes);
+  }
 
+  void scalePlot(double scaleX, double scaleY) {
+    camera.scale(scaleX, scaleY);
+    plot.onConstraintsChanged?.call(camera.localConstraints, plotExtremes);
+  }
 
 
   bool _checkAnnotationHit(PointerDownEvent event) {
@@ -175,7 +183,10 @@ class PlotView extends StatefulWidget {
     camera = Camera(
       canvasWidth: canvasWidth, 
       canvasHeight: canvasHeight,
-      localConstraints: plotExtremes
+      localConstraints: plot.constraints ?? plotExtremes,
+      minimumScale: plot.minimumScale,
+      maximumScale: plot.maximumScale,
+
     );
 
   }
@@ -183,14 +194,13 @@ class PlotView extends StatefulWidget {
 
   void _initDecimate() {
     if (plot.decimate != null) {
-      _decimate = plot.decimate!;
+      decimate = plot.decimate!;
     } else {
       final display = WidgetsBinding.instance.platformDispatcher.views.first.display;
       debugLog('Measured Refresh Rate was ${display.refreshRate} Hz');
-      _decimate = display.refreshRate ~/ 10;
+      decimate = display.refreshRate ~/ 10;
     }
   }
-
   
   void _initGraphPaths(List<Graph> graphs) {
     graphs.forEach((graph) {
@@ -210,7 +220,6 @@ class PlotView extends StatefulWidget {
     final double yMin = graphs.map((graph) => graph.y.reduce(min)).reduce(min);
     final double yMax = graphs.map((graph) => graph.y.reduce(max)).reduce(max);
     plotExtremes = PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
-  
   }
 
 
@@ -246,6 +255,7 @@ class PlotView extends StatefulWidget {
 
 
   void _disposeValues() {
+    graphPaths.clear();
     _activeAnnotation = null;
     _activeCrosshair = null;
     _activeGraph = null;
@@ -267,6 +277,7 @@ class FlutterPlotState extends State<PlotView> {
   Offset _moveOffset = Offset.zero;
 
 
+
   void _handleMouseScroll(PointerEvent event) {
     double scale = 0;
     if (event is PointerPanZoomUpdateEvent) {
@@ -277,17 +288,17 @@ class FlutterPlotState extends State<PlotView> {
     scale = scale > 0 ? 0.9 : 1.1;
     if (_shiftDown) {
       setState(() {
-        widget.camera.zoom(scale, 1.0);
+        widget.scalePlot(scale, 1.0);
       });
     }
     else if (_controlDown) {
       setState(() {
-        widget.camera.zoom(1.0, scale);
+        widget.scalePlot(1.0, scale);
       });
     }
     else {
       setState(() {
-        widget.camera.zoom(scale, scale);    
+        widget.camera.scale(scale, scale);    
       });
     }
   }
@@ -300,7 +311,6 @@ class FlutterPlotState extends State<PlotView> {
       }
       else if (widget._checkCrosshairHit(event)) {     
         widget.currentInteraction = Interaction.crosshair;
-        widget._activeCrosshair?.onDragStarted?.call(widget._activeCrosshair!);
       } 
       else {
         widget.currentInteraction = Interaction.graph;
@@ -311,9 +321,10 @@ class FlutterPlotState extends State<PlotView> {
   void _handlePointerUp(PointerUpEvent event) {
     switch(widget.currentInteraction) {
       case Interaction.annotation:
+        widget._activeAnnotation?.onDragEnd?.call(widget._activeAnnotation!.position);
         break;
       case Interaction.crosshair:
-        widget._activeCrosshair?.onDragEnd?.call(widget._activeCrosshair!);
+        widget._activeCrosshair?.onDragEnd?.call(widget._activeCrosshair!.position);
       case Interaction.graph:
         break;
     }
@@ -339,9 +350,9 @@ class FlutterPlotState extends State<PlotView> {
       case Interaction.graph:
           _moveFreq++;
           _moveOffset += event.localDelta;
-          if (_moveFreq >= widget._decimate) {
+          if (_moveFreq >= widget.decimate) {
             setState(() {
-              widget.camera.move(_moveOffset.dx, _moveOffset.dy);
+              widget.movePlot(_moveOffset);
               _moveFreq = 0;
               _moveOffset = Offset.zero;
             });

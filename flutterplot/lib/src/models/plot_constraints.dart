@@ -1,7 +1,6 @@
-
-
-
 import 'dart:ui';
+
+import 'package:flutterplot/src/utils/utils.dart';
 
 class PlotConstraints {
 
@@ -12,7 +11,7 @@ class PlotConstraints {
       required this.yMax,
   });
 
-  PlotConstraints.fromMinMax({
+  PlotConstraints.fromOffset({
     required Offset min,
     required Offset max,
   }) {
@@ -22,14 +21,21 @@ class PlotConstraints {
     yMax = max.dy;
   }
 
-  late final double xMin;
-  late final double xMax;
-  late final double yMin;
-  late final double yMax;
+  late double xMin;
+  late double xMax;
+  late double yMin;
+  late double yMax;
 
 
   bool get isFinite => xMin.isFinite && xMax.isFinite && yMin.isFinite && yMax.isFinite;
 
+
+  void toLog10() {
+    xMin = xMin.toLog10();
+    xMax = xMax.toLog10();
+    yMin = yMin.toLog10();
+    yMax = yMax.toLog10();
+  }
 
   @override
   bool operator ==(covariant PlotConstraints other) {

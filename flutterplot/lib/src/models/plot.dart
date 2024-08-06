@@ -48,10 +48,12 @@ class Plot extends StatelessWidget {
     this.yTicks,
     this.constraints,
     this.decimate,
-    this.onResize,
+    this.onConstraintsChanged,
     this.strokeWidth = 1,
     this.padding = 0,
     this.crosshairFractionDigits = 2,
+    this.minimumScale = 0.25,
+    this.maximumScale = 50,
   });
 
 
@@ -65,7 +67,8 @@ class Plot extends StatelessWidget {
   /// The ticks which will annotate the y-axis.
   final Ticks? yTicks;
 
-  /// Initial Plot constraints
+  /// Initial Plot constraints. 
+  /// If xTicks or yTicks is logarithmic, it is expected that the constraints are in the log10 space.
   final PlotConstraints? constraints;
 
   /// Specifies the integer which will decimate the update frequency
@@ -73,8 +76,10 @@ class Plot extends StatelessWidget {
   /// If null, decimate will be calculated according to the screen refresh rate.
   final int? decimate;
 
-  /// Function called every time the Plot is resized
-  final Function(PlotConstraints constraints, PlotConstraints extremes)? onResize;
+  /// Function called every time the PlotConstraints changes. 
+  /// To optimize performance, do not use this feature!
+  /// If xTicks or yTicks is logarithmic, the constraints and extremes are in the log10 space.
+  final Function(PlotConstraints constraints, PlotConstraints extremes)? onConstraintsChanged;
 
   /// The width of the graph lines
   final double strokeWidth;
@@ -84,6 +89,13 @@ class Plot extends StatelessWidget {
 
   /// The number of digits to use for FlutterPlot crosshair
   final int crosshairFractionDigits;
+
+  /// The minimum scale factor possible for scaling the plot. 
+  final double minimumScale;
+
+  /// The maximum scale factor possible for scaling the plot.
+  final double maximumScale;
+
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -103,12 +115,17 @@ class Plot extends StatelessWidget {
     other.decimate == decimate &&
     other.strokeWidth == strokeWidth &&
     other.padding == padding &&
-    other.crosshairFractionDigits == crosshairFractionDigits;
+    other.crosshairFractionDigits == crosshairFractionDigits &&
+    other.minimumScale == minimumScale &&
+    other.maximumScale == maximumScale;
 
 
-    void toLog(bool xLog, bool yLog) {
-      graphs.forEach((graph) => graph.toLog(xLog, yLog));
-    }
+
+  void toLog(bool xLog, bool yLog) {
+    graphs.forEach((graph) => graph.toLog(xLog, yLog));
+  }
+
+
   }
 
     

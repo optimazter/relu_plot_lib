@@ -15,7 +15,6 @@ class Crosshair  {
     this.width = 120,
     this.height = 70,
     this.position = Offset.infinite,
-    this.onDragStarted,
     this.onDragEnd,})
     : halfWidth = width / 2, 
     halfHeight = height / 2;
@@ -45,16 +44,12 @@ class Crosshair  {
   /// The position in the Plot space where the Crosshair is lcoated
   Offset position;
 
-  /// Function called every time the Crosshair drag has started
-  final Function(Crosshair crosshair)? onDragStarted;
-
   /// Function called every time the Crosshair has been moved
-  final Function(Crosshair crosshair)? onDragEnd;
+  final Function(Offset position)? onDragEnd;
 
   /// The previous index which will be used for searching for the nearest point
   /// when moving the crosshair.
   int prevIndex = 0;
-
 
   
   @override

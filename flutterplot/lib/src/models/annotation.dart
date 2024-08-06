@@ -16,9 +16,11 @@ class Annotation extends ParentDataWidget<AnnotationParentData> {
    Annotation({
     super.key, 
     this.position = Offset.zero,
+    this.onDragEnd,
     required double width,
     required double height,
     required Widget child,
+
   }) 
   : 
   halfWidth = width / 2,
@@ -29,6 +31,10 @@ class Annotation extends ParentDataWidget<AnnotationParentData> {
   final Matrix4 modelView = Matrix4.identity();
   final double halfWidth;
   final double halfHeight;
+
+
+  /// Function called every time the Annotation has been moved
+  final Function(Offset position)? onDragEnd;
 
 
   @override

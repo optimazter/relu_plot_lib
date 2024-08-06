@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutterplot/flutterplot.dart';
 import 'package:flutterplot/src/utils/utils.dart';
 import 'package:vector_math/vector_math_64.dart';
@@ -11,27 +10,33 @@ class Camera {
     required this.canvasWidth,
     required this.canvasHeight,
     required PlotConstraints localConstraints,
-    this.minZoom = 0.5,
-    this.maxZoom = 25,
-  }) 
-  : _projection = makeOrthographicMatrix(
+    required double minimumScale,
+    required double maximumScale,
+  }) : 
+    _minimumScaleX = minimumScale * canvasWidth / 2,
+    _maximumScaleX = maximumScale * canvasWidth / 2,
+    _minimumScaleY = minimumScale * canvasHeight / 2,
+    _maximumScaleY = maximumScale * canvasWidth / 2,
+    _projection = makeOrthographicMatrix(
     localConstraints.xMin, 
     localConstraints.xMax, 
     localConstraints.yMax, 
     localConstraints.yMin, 
-  -1, 1)
-  ..scale(canvasWidth / 2, canvasHeight / 2)
-  ..translate(0.0, -(localConstraints.yMax - localConstraints.yMin));
-
+    -1, 1),
+    _scale = Matrix4.identity()..scale(canvasWidth / 2, canvasHeight / 2),
+    _translation = Matrix4.identity()..translate((localConstraints.xMax - localConstraints.xMin) / 2, -(localConstraints.yMax - localConstraints.yMin) / 2);
+    
 
   final double canvasWidth;
   final double canvasHeight;
 
-  final double minZoom;
-  final double maxZoom;
+  final double _minimumScaleX;
+  final double _maximumScaleX;
+  final double _minimumScaleY;
+  final double _maximumScaleY;
 
-  final Matrix4 _scale = Matrix4.identity();
-  final Matrix4 _translation = Matrix4.identity();
+  final Matrix4 _scale;
+  final Matrix4 _translation;
   final Matrix4 _projection;
 
   Matrix4 get transform => _scale * _projection * _translation;
@@ -40,25 +45,25 @@ class Camera {
 
   PlotConstraints get localConstraints {
     final transformInverted = Matrix4.inverted(transform);
-    return PlotConstraints.fromMinMax(
+    return PlotConstraints.fromOffset(
         min: transformInverted.transformOffset(Offset(0, canvasHeight)), 
         max: transformInverted.transformOffset(Offset(canvasWidth, 0))
       );
   } 
 
 
-  void zoom(double scaleX, double scaleY) {
+  void scale(double scaleX, double scaleY) {
     
-    _scale.translate(canvasWidth / 2, canvasHeight / 2);
+    _scale.translate(1.0, 1.0);
     _scale.scale(scaleX, scaleY);
 
-    if (_scale.scaleX < minZoom || _scale.scaleX > maxZoom) {
+    if (_scale.scaleX < _minimumScaleX || _scale.scaleX > _maximumScaleX) {
       _scale.scale(1 / scaleX, 1.0);
     }
-    if (_scale.scaleY < minZoom || _scale.scaleY > maxZoom) {
+    if (_scale.scaleY < _minimumScaleY || _scale.scaleY > _maximumScaleY) {
       _scale.scale(1.0, 1 / scaleY);
     }
-    _scale.translate(-canvasWidth / 2, -canvasHeight / 2);
+   _scale.translate(-1.0, -1.0);
 
   }
 
