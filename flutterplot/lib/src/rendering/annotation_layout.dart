@@ -1,6 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterplot/src/models/annotation.dart';
+import 'package:flutterplot/src/rendering/annotation_render_element.dart';
 import 'package:flutterplot/src/utils/utils.dart';
 
 
@@ -10,31 +11,25 @@ class AnnotationLayout extends MultiChildRenderObjectWidget {
   AnnotationLayout({
     required this.annotations,
     required this.transform,
-  }) : 
-  super(children: annotations);
+  }) : super(children: annotations);
 
   final List<Annotation> annotations;
   final Matrix4 transform;
 
 
+  @override
+  MultiChildRenderObjectElement createElement() => AnnotationRenderElement(this);
 
   @override
   AnnotationRenderObject createRenderObject(BuildContext context) {
     return AnnotationRenderObject()..transform = transform;
   } 
-
   
 
   @override
   void updateRenderObject(BuildContext context, AnnotationRenderObject renderObject) {
     renderObject.transform = transform;
-    int i = 0;
-    renderObject.visitChildren((object) {
-      annotations[i].applyParentData(object);
-      i++;
-    });
   }
-
 
 }
 
@@ -46,9 +41,8 @@ class AnnotationRenderObject extends RenderBox with ContainerRenderObjectMixin<R
 
 
   Matrix4 transform = Matrix4.identity();
-
-
   
+
   @override
   void setupParentData(covariant RenderObject child) {
     if (child.parentData is! AnnotationParentData) {
@@ -75,9 +69,7 @@ class AnnotationRenderObject extends RenderBox with ContainerRenderObjectMixin<R
     RenderBox? child = firstChild;
     context.canvas.save();
     context.canvas.clipRect(Rect.fromLTRB(offset.dx, offset.dy, offset.dx + constraints.maxWidth, offset.dy + constraints.maxHeight));
-
     context.canvas.translate(-constraints.maxWidth / 2, -constraints.maxHeight / 2);
-
     while (child != null) {
       final AnnotationParentData childParentData = child.parentData! as AnnotationParentData;
       final Offset globalPosition = transform.transformOffset(childParentData.position) + offset;

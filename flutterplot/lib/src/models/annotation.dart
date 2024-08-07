@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutterplot/src/painters/annotation_painter.dart';
+import 'package:flutterplot/src/rendering/annotation_layout.dart';
 
 
 

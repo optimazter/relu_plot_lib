@@ -4,10 +4,10 @@ import 'package:flutterplot/flutterplot.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterplot/src/models/camera.dart';
-import 'package:flutterplot/src/painters/annotation_painter.dart';
-import 'package:flutterplot/src/painters/crosshair_painter.dart';
-import 'package:flutterplot/src/painters/graph_painter.dart';
-import 'package:flutterplot/src/painters/ticks_painter.dart';
+import 'package:flutterplot/src/rendering/annotation_layout.dart';
+import 'package:flutterplot/src/rendering/crosshair_painter.dart';
+import 'package:flutterplot/src/rendering/graph_painter.dart';
+import 'package:flutterplot/src/rendering/ticks_painter.dart';
 import 'package:flutterplot/src/utils/utils.dart';
 
 
