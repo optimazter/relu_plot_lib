@@ -44,8 +44,10 @@ class PlotView extends StatefulWidget {
   late final int decimate;
 
 
-  Interaction currentInteraction = Interaction.crosshair;
 
+  Interaction currentInteraction = Interaction.crosshair;
+  bool _xLog = false;
+  bool _yLog = false;
 
   Annotation? _activeAnnotation;
   Crosshair? _activeCrosshair;
@@ -62,10 +64,11 @@ class PlotView extends StatefulWidget {
   Ticks? get yTicks => plot.yTicks?..update(camera.localConstraints.yMin, camera.localConstraints.yMax);
 
   List<Crosshair> get crosshairs => plot.graphs.map((graph) => graph.crosshairs ?? []).expand((crosshair) => crosshair).toList();
-
   List<Annotation> get annotations => plot.graphs.map((graph) => graph.annotations ?? []).expand((annotation) => annotation).toList();
 
   
+
+
   void init() {
     debugLog('Initializing Plot');
     _disposeValues();
@@ -177,7 +180,9 @@ class PlotView extends StatefulWidget {
 
 
   void _initLog(bool xLog, bool yLog) {
-    plot.toLog(xLog, yLog);
+    plot.toLog(_xLog != xLog, _yLog != yLog);
+    _xLog = xLog;
+    _yLog = yLog;
   }
 
 
@@ -376,10 +381,10 @@ class FlutterPlotState extends State<PlotView> {
     
   }
 
-
   @override
   void didUpdateWidget(covariant PlotView oldWidget) {
     super.didUpdateWidget(oldWidget);
+  
   }
 
 
