@@ -11,7 +11,7 @@ import 'package:flutterplot/src/utils/utils.dart';
 
 class Graph {
 
-  const Graph({
+  Graph({
     required this.x, 
     required this.y,
     this.color,
@@ -36,15 +36,21 @@ class Graph {
   final List<Crosshair>? crosshairs;
 
 
+  bool _log = false;
+
+
   void toLog(bool xLog, bool yLog) {
-    if (xLog) {
-      for (int i = 0; i < x.length; i++) {
-        x[i] = x[i].toLog10();
+    if (!_log) {
+      _log = true;
+      if (xLog) {
+        for (int i = 0; i < x.length; i++) {
+          x[i] = x[i].toLog10();
+        }
       }
-    }
-    if (yLog) {
-      for (int i = 0; i < x.length; i++) {
-        y[i] = y[i].toLog10();
+      if (yLog) {
+        for (int i = 0; i < x.length; i++) {
+          y[i] = y[i].toLog10();
+        }
       }
     }
   }

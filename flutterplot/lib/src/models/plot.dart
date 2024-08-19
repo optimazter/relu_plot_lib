@@ -124,7 +124,9 @@ class Plot extends StatelessWidget {
 
 
   void toLog(bool xLog, bool yLog) {
-    graphs.forEach((graph) => graph.toLog(xLog, yLog));
+    for (int i = 0; i < graphs.length; i++) {
+      graphs[i].toLog(xLog, yLog);
+    }
   }
 
 

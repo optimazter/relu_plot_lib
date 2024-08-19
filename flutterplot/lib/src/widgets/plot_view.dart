@@ -46,8 +46,6 @@ class PlotView extends StatefulWidget {
 
 
   Interaction currentInteraction = Interaction.crosshair;
-  bool _xLog = false;
-  bool _yLog = false;
 
   Annotation? _activeAnnotation;
   Crosshair? _activeCrosshair;
@@ -180,9 +178,7 @@ class PlotView extends StatefulWidget {
 
 
   void _initLog(bool xLog, bool yLog) {
-    plot.toLog(_xLog != xLog, _yLog != yLog);
-    _xLog = xLog;
-    _yLog = yLog;
+    plot.toLog(xLog, yLog);
   }
 
 
@@ -246,7 +242,6 @@ class PlotView extends StatefulWidget {
 
 
   void _initCrosshairs(List<Graph> graphs) {
-
     graphs.forEach((graph) {
       if (graph.crosshairs != null) {
         for (var crosshair in graph.crosshairs!) {
@@ -384,7 +379,7 @@ class FlutterPlotState extends State<PlotView> {
   @override
   void didUpdateWidget(covariant PlotView oldWidget) {
     super.didUpdateWidget(oldWidget);
-  
+
   }
 
 
