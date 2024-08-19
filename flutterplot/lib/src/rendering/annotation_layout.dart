@@ -56,7 +56,7 @@ class AnnotationRenderObject extends RenderBox with ContainerRenderObjectMixin<R
     RenderBox? child = firstChild;
     while (child != null) {
       final AnnotationParentData childParentData = child.parentData! as AnnotationParentData;
-      child.layout(constraints, parentUsesSize: false);
+      child.layout(constraints, parentUsesSize: true);
       assert(child.parentData == childParentData);
       child = childParentData.nextSibling;
     }
@@ -69,15 +69,13 @@ class AnnotationRenderObject extends RenderBox with ContainerRenderObjectMixin<R
     RenderBox? child = firstChild;
     context.canvas.save();
     context.canvas.clipRect(Rect.fromLTRB(offset.dx, offset.dy, offset.dx + constraints.maxWidth, offset.dy + constraints.maxHeight));
-    context.canvas.translate(-constraints.maxWidth / 2, -constraints.maxHeight / 2);
     while (child != null) {
       final AnnotationParentData childParentData = child.parentData! as AnnotationParentData;
-      final Offset globalPosition = transform.transformOffset(childParentData.position) + offset;
+      final Offset globalPosition = transform.transformOffset(childParentData.position) + offset - constraints.biggest.center(Offset.zero);
       context.paintChild(child, globalPosition);
       assert(child.parentData == childParentData);
       child = childParentData.nextSibling;
     }
-
     context.canvas.restore();
 
   }
