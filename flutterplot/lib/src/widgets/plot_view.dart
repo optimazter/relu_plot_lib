@@ -223,6 +223,7 @@ class PlotView extends StatefulWidget {
     final double yMin = graphs.map((graph) => graph.y.reduce(min)).reduce(min);
     final double yMax = graphs.map((graph) => graph.y.reduce(max)).reduce(max);
     plotExtremes = PlotConstraints(xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
+    plot.onConstraintsChanged?.call(plot.constraints ?? plotExtremes, plotExtremes);
   }
 
 
@@ -231,7 +232,7 @@ class PlotView extends StatefulWidget {
     graphs.forEach((graph) {
     if (graph.annotations != null) {
       for (var annotation in graph.annotations!) {
-        if (annotation.position == Offset.zero) {
+        if (annotation.position == Offset.infinite) {
           final int index = graph.x.length ~/ 2;
           annotation.position = Offset(graph.x[index], graph.y[index]);
         }

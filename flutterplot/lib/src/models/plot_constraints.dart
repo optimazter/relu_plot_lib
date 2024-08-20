@@ -19,6 +19,21 @@ class PlotConstraints {
     yMax = max.dy;
   }
 
+
+  PlotConstraints copyWith({
+    final double? xMin,
+    final double? xMax,
+    final double? yMax,
+    final double? yMin,
+  }) {
+    return PlotConstraints(
+      xMin: xMin ?? this.xMin, 
+      xMax: xMax ?? this.xMax, 
+      yMin: yMin ?? this.yMin, 
+      yMax: yMax ?? this.yMax
+    );
+  }
+
   late final double xMin;
   late final double xMax;
   late final double yMin;
