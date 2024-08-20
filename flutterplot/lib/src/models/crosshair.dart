@@ -15,6 +15,7 @@ class Crosshair  {
     this.width = 120,
     this.height = 70,
     this.position = Offset.infinite,
+    this.fractionDigits = 1,
     this.onDragEnd,})
     : halfWidth = width / 2, 
     halfHeight = height / 2;
@@ -44,6 +45,9 @@ class Crosshair  {
   /// The position in the Plot space where the Crosshair is lcoated
   Offset position;
 
+  /// The number of fraction digits to show in the crosshair label.
+  final int fractionDigits;
+
   /// Function called every time the Crosshair has been moved
   final Function(Offset position)? onDragEnd;
 
@@ -59,6 +63,7 @@ class Crosshair  {
       other.height == height &&
       other.runtimeType == runtimeType &&
       other.position == position &&
+      other.fractionDigits == fractionDigits &&
       other.label == label;
 
 

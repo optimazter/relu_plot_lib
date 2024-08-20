@@ -51,7 +51,6 @@ class Plot extends StatelessWidget {
     this.onConstraintsChanged,
     this.strokeWidth = 1,
     this.padding = 0,
-    this.crosshairFractionDigits = 2,
     this.minimumScale = 0.25,
     this.maximumScale = 50,
   });
@@ -87,9 +86,6 @@ class Plot extends StatelessWidget {
   /// The padding to use around the plot borders
   final double padding;
 
-  /// The number of digits to use for FlutterPlot crosshair
-  final int crosshairFractionDigits;
-
   /// The minimum scale factor possible for scaling the plot. 
   final double minimumScale;
 
@@ -117,7 +113,6 @@ class Plot extends StatelessWidget {
     other.decimate == decimate &&
     other.strokeWidth == strokeWidth &&
     other.padding == padding &&
-    other.crosshairFractionDigits == crosshairFractionDigits &&
     other.minimumScale == minimumScale &&
     other.maximumScale == maximumScale;
 

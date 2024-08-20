@@ -35,7 +35,6 @@ class Graph {
   /// The Crosshairs which will be attached to this graph.
   final List<Crosshair>? crosshairs;
 
-
   bool _log = false;
 
 

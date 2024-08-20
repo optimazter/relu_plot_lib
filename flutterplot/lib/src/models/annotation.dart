@@ -17,20 +17,16 @@ class Annotation extends ParentDataWidget<AnnotationParentData> {
     super.key, 
     this.position = Offset.zero,
     this.onDragEnd,
-    required double width,
-    required double height,
+    required this.width,
+    required this.height,
     required Widget child,
-
   }) 
-  : 
-  halfWidth = width / 2,
-  halfHeight = height / 2,
-  super(child: Center(child: child));
+  : super(child: Center(child: child));
 
   Offset position;
   final Matrix4 modelView = Matrix4.identity();
-  final double halfWidth;
-  final double halfHeight;
+  final double width;
+  final double height;
 
 
   /// Function called every time the Annotation has been moved

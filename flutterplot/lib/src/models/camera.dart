@@ -18,11 +18,11 @@ class Camera {
     _minimumScaleY = minimumScale * canvasHeight / 2,
     _maximumScaleY = maximumScale * canvasWidth / 2,
     _projection = makeOrthographicMatrix(
-    localConstraints.xMin, 
-    localConstraints.xMax, 
-    localConstraints.yMax, 
-    localConstraints.yMin, 
-    -1, 1),
+      localConstraints.xMin, 
+      localConstraints.xMax, 
+      localConstraints.yMax, 
+      localConstraints.yMin, 
+      -1, 1),
     _scale = Matrix4.identity()..scale(canvasWidth / 2, canvasHeight / 2),
     _translation = Matrix4.identity()..translate((localConstraints.xMax - localConstraints.xMin) / 2, -(localConstraints.yMax - localConstraints.yMin) / 2);
     

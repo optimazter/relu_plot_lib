@@ -32,8 +32,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-
+  
 
 
   @override
@@ -49,15 +48,18 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Padding(
-          padding: EdgeInsets.only(left: 300),
+          padding: EdgeInsets.all(10),
           child: Plot(
             xTicks: Ticks(
               pretty: true, 
-              logarithmic: true
+              logarithmic: true,
+              unit: 'Hz',
+              fractionDigits: 1,
               ),
             yTicks: Ticks(
               pretty: true, 
-              logarithmic: false
+              logarithmic: false,
+              unit: 'dBSPL'
               ),
             graphs: [
               Graph(
@@ -66,9 +68,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.blue,
                 crosshairs: [
                   Crosshair(
+                    width: 150,
                     label: 'Crosshair', 
                     yPadding: 20, 
-                    color: Colors.red
+                    color: Colors.red,
                   )
                 ],
                 annotations: [

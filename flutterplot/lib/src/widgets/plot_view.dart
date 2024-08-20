@@ -4,7 +4,7 @@ import 'package:flutterplot/flutterplot.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterplot/src/models/camera.dart';
-import 'package:flutterplot/src/rendering/annotation_layout.dart';
+import 'package:flutterplot/src/rendering/annotation_layer.dart';
 import 'package:flutterplot/src/rendering/crosshair_painter.dart';
 import 'package:flutterplot/src/rendering/graph_painter.dart';
 import 'package:flutterplot/src/rendering/ticks_painter.dart';
@@ -98,8 +98,8 @@ class PlotView extends StatefulWidget {
       }
       for (Annotation annotation in graph.annotations!) {
         final Offset globalPosition = camera.transform.transformOffset(annotation.position);
-        if (event.localPosition.dx >= globalPosition.dx - annotation.halfWidth && event.localPosition.dx <= globalPosition.dx + annotation.halfWidth
-           && event.localPosition.dy >= globalPosition.dy - annotation.halfHeight && event.localPosition.dy <= globalPosition.dy + annotation.halfHeight) {
+        if (event.localPosition.dx >= globalPosition.dx && event.localPosition.dx <= globalPosition.dx + annotation.width
+           && event.localPosition.dy >= globalPosition.dy && event.localPosition.dy <= globalPosition.dy + annotation.height) {
           _activeAnnotation = annotation;
           _activeGraph = graph;
           return true;
@@ -444,7 +444,6 @@ class FlutterPlotState extends State<PlotView> {
                   child: CustomPaint(
                       painter: CrosshairPainter(
                         crosshairs: widget.crosshairs,
-                        fractionDigits: widget.plot.crosshairFractionDigits,
                         xUnit: widget.plot.xTicks?.unit,
                         yUnit: widget.plot.yTicks?.unit, 
                         logarithmicXLabel: widget.plot.xTicks?.logarithmic ?? false,
@@ -456,7 +455,7 @@ class FlutterPlotState extends State<PlotView> {
                 SizedBox(
                   width: widget.width,
                   height: widget.height,
-                  child:  AnnotationLayout(
+                  child:  AnnotationLayer(
                     annotations: widget.annotations,
                     transform: widget.camera.transform,
                   ),

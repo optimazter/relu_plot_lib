@@ -28,6 +28,7 @@ class AnnotationLayout extends MultiChildRenderObjectWidget {
 
   @override
   void updateRenderObject(BuildContext context, AnnotationRenderObject renderObject) {
+    super.updateRenderObject(context, renderObject);
     renderObject.transform = transform;
   }
 

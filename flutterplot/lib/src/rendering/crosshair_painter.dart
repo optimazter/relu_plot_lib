@@ -9,7 +9,6 @@ class CrosshairPainter extends CustomPainter {
 
   const CrosshairPainter({
     required this.crosshairs,
-    required this.fractionDigits,
     required this.xUnit,
     required this.yUnit,
     required this.logarithmicXLabel,
@@ -18,7 +17,6 @@ class CrosshairPainter extends CustomPainter {
   });
 
   final List<Crosshair> crosshairs;
-  final int fractionDigits;
   final String? xUnit;
   final String? yUnit;
   final bool logarithmicXLabel;
@@ -29,16 +27,11 @@ class CrosshairPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
 
-    debugLog('Repainting Crosshairs');
-
-
     final linePaint = Paint();
     final boxPaint = Paint();
     final TextStyle textStyle = TextStyle(
           color:  Colors.black, 
     );
-
-
 
     crosshairs.forEach((crosshair) {
       final Offset globalPosition = transform.transformOffset(crosshair.position);
@@ -53,7 +46,7 @@ class CrosshairPainter extends CustomPainter {
       canvas.save();
       canvas.clipRect(Rect.fromLTRB(-crosshair.halfWidth, -crosshair.halfHeight, size.width + crosshair.halfWidth, size.height + crosshair.halfHeight));
       _paintCrosshairBox(canvas, globalPosition, crosshair.width, crosshair.height, crosshair.yPadding, boxPaint);
-      _paintCrosshairText(canvas, crosshair.label, crosshair.position, globalPosition, crosshair.yPadding, textStyle, crosshair.width);
+      _paintCrosshairText(canvas, crosshair.label, crosshair.position, globalPosition, crosshair.yPadding, textStyle, crosshair.width, crosshair.fractionDigits);
       canvas.restore();
     });
  
@@ -66,7 +59,7 @@ class CrosshairPainter extends CustomPainter {
   }
 
 
-  void _paintCrosshairText(Canvas canvas, String label, Offset localPosition, Offset globalPosition, double padding, TextStyle textStyle, double width) {
+  void _paintCrosshairText(Canvas canvas, String label, Offset localPosition, Offset globalPosition, double padding, TextStyle textStyle, double width, int fractionDigits) {
     final ParagraphBuilder paragraphBuilder = ParagraphBuilder(
             ParagraphStyle()
           )
