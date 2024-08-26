@@ -52,8 +52,8 @@ class PlotView extends StatefulWidget {
   Graph? _activeGraph;
 
 
-  double get paddingL => plot.padding; 
-  double get paddingB => plot.padding + 20;
+  double get paddingL => plot.padding + 30; 
+  double get paddingB => plot.padding + 30;
   double get paddingR => plot.padding;
   double get paddingT => plot.padding;
 
@@ -311,9 +311,11 @@ class FlutterPlotState extends State<PlotView> {
     setState(() {
       if (widget._checkAnnotationHit(event)) {
         widget.currentInteraction = Interaction.annotation;
+        widget._activeAnnotation?.onDragStart?.call(widget._activeAnnotation!);
       }
       else if (widget._checkCrosshairHit(event)) {     
         widget.currentInteraction = Interaction.crosshair;
+        widget._activeCrosshair?.onDragStart?.call(widget._activeCrosshair!);
       } 
       else {
         widget.currentInteraction = Interaction.graph;
@@ -429,6 +431,8 @@ class FlutterPlotState extends State<PlotView> {
                       yTicks: widget.yTicks?.ticks,
                       xLabels: widget.xTicks?.labels,
                       yLabels: widget.yTicks?.labels,
+                      xUnit: widget.xTicks?.unit,
+                      yUnit: widget.yTicks?.unit,
                       bottomPadding: widget.paddingB,
                       leftPadding: widget.paddingL,
                       transform: widget.camera.transform,

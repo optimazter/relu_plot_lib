@@ -11,6 +11,8 @@ class TicksPainter extends CustomPainter {
     required this.xLabels,
     required this.yTicks,
     required this.yLabels,
+    required this.xUnit,
+    required this.yUnit,
     required this.bottomPadding, 
     required this.leftPadding,
     required this.transform,
@@ -20,6 +22,8 @@ class TicksPainter extends CustomPainter {
   final List<String>? xLabels;
   final List<double>? yTicks;
   final List<String>? yLabels;
+  final String? xUnit;
+  final String? yUnit;
   final double bottomPadding;
   final double leftPadding;
   final Matrix4 transform;
@@ -37,6 +41,13 @@ class TicksPainter extends CustomPainter {
       _paintTicks(canvas, xTicksCanvas, yTicksCanvas, size, linePaint);
       _paintLabels(canvas, xTicksCanvas, yTicksCanvas, xLabels!, yLabels!, size);
     }
+    if (xUnit != null) {
+      _paintUnit(canvas, size, xUnit!, Offset(size.width / 2, size.height + bottomPadding / 2));
+    }
+    if (yUnit != null) {
+      _paintUnit(canvas, size, xUnit!, Offset(-leftPadding, size.height / 2));
+    }
+
 
 
   }
@@ -62,10 +73,31 @@ class TicksPainter extends CustomPainter {
     canvas.restore();
   }
 
+  void _paintUnit(Canvas canvas, Size size, String unit, Offset position) {
+
+    final TextStyle textStyle = TextStyle(
+      color:  Colors.black, 
+      letterSpacing: -0.5,
+      fontSize: 15
+    );
+    final ParagraphBuilder paragraphBuilder = ParagraphBuilder(
+      ParagraphStyle()
+    )
+    ..pushStyle(textStyle.getTextStyle())
+    ..addText(unit);
+
+    final Paragraph paragraph = paragraphBuilder.build()
+    ..layout(ParagraphConstraints(width: size.width));
+
+    canvas.drawParagraph(paragraph, position);
+  }
+
   void _paintLabels(Canvas canvas, List<double> xTicks, List<double> yTicks, List<String> xLabels, List<String> yLabels, Size size) {
 
     final TextStyle textStyle = TextStyle(
           color:  Colors.black, 
+          letterSpacing: -0.5,
+          fontSize: 12.5
         );
     canvas.save();
     canvas.clipRect(Rect.fromLTRB(0, 0, size.width, size.height + bottomPadding));

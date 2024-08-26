@@ -1,22 +1,26 @@
 import 'dart:ui';
 
+import 'package:flutterplot/src/models/draggable_plot_object.dart';
+
 /// A crosshair which can be attached to a FlutterPlot [Graph].
 /// 
 /// The crosshair can be moved around on the graph by dragging the mouse 
 /// while pressing the left mouse button. The crosshair will display the 
 /// position (x,y) where the crosshair is located on the graph.
 /// 
-class Crosshair  {
+class Crosshair extends DraggablePlotObject {
 
   Crosshair(
     {required this.label, 
     required this.yPadding,
     required this.color,
-    this.width = 120,
-    this.height = 70,
-    this.position = Offset.infinite,
     this.fractionDigits = 1,
-    this.onDragEnd,})
+    super.width = 120,
+    super.height = 70,
+    super.position,
+    super.onDragStart,
+    super.onDragEnd,
+    })
     : halfWidth = width / 2, 
     halfHeight = height / 2;
 
@@ -30,26 +34,14 @@ class Crosshair  {
   /// The color of the display box as well as circle for this crosshair.
   Color color;
 
-  /// The width of the Crosshair
-  final double width;
-
-  /// The height of the Crosshair
-  final double height;
-
   /// The [width] divided by 2
   final double halfWidth;
 
   /// The [height] divided by 2
   final double halfHeight;
 
-  /// The position in the Plot space where the Crosshair is lcoated
-  Offset position;
-
   /// The number of fraction digits to show in the crosshair label.
   final int fractionDigits;
-
-  /// Function called every time the Crosshair has been moved
-  final Function(Offset position)? onDragEnd;
 
   /// The previous index which will be used for searching for the nearest point
   /// when moving the crosshair.
