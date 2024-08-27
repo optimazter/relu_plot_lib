@@ -14,12 +14,13 @@ class Annotation extends DraggablePlotObject {
     super.position,
     super.onDragStart,
     super.onDragEnd,
-    required Widget child,
+    Widget? child,
   })
-  : child = Center(child: child);
+  : _child = Center(child: child);
 
-  final Widget child;
+  final Widget _child;
 
+  Widget get child => _child;
 
 
 }
