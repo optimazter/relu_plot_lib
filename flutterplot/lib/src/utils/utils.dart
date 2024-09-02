@@ -72,6 +72,7 @@ extension FlutterPlotMatrix4 on Matrix4 {
   /// Transform [x] of type [double] using the transformation defined by
   /// this.
   double transformX(double x) => (this.storage[0] * x) + this.storage[12];
+  
   /// Transform [y] of type [double] using the transformation defined by
   /// this.
   double transformY(double y) => (this.storage[5] * y) + this.storage[13];
@@ -99,7 +100,6 @@ extension FlutterPlotMatrix4 on Matrix4 {
 
 
 double toLog10(double a) => a.toLog10();
-
 
 
 

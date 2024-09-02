@@ -1,5 +1,8 @@
 import 'dart:ui';
 
+
+
+/// A constraints object which specifies the bounding box of a [plot]
 class PlotConstraints {
 
   PlotConstraints({
@@ -12,12 +15,12 @@ class PlotConstraints {
   PlotConstraints.fromOffset({
     required Offset min,
     required Offset max,
-  }) {
-    xMin = min.dx;
-    xMax = max.dx;
-    yMin = min.dy;
+  }) :
+    xMin = min.dx,
+    xMax = max.dx,
+    yMin = min.dy,
     yMax = max.dy;
-  }
+  
 
 
   PlotConstraints copyWith({
@@ -34,10 +37,17 @@ class PlotConstraints {
     );
   }
 
-  late final double xMin;
-  late final double xMax;
-  late final double yMin;
-  late final double yMax;
+  /// Minimum value on x-axis.
+  final double xMin;
+
+  /// Maximum value on x-axis.
+  final double xMax;
+
+  /// Minimum value on y-axis.
+  final double yMin;
+  
+  /// Maximum value on y-axis.
+  final double yMax;
 
 
   bool get isFinite => xMin.isFinite && xMax.isFinite && yMin.isFinite && yMax.isFinite;

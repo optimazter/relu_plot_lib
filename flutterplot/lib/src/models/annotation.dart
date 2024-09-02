@@ -4,7 +4,11 @@ import 'package:flutterplot/src/utils/utils.dart';
 
 
 
-
+/// An annotation which can be attached to a FlutterPlot [Graph].
+/// 
+/// The annotation can be moved around on the graph by dragging the mouse 
+/// while pressing the left mouse button. The annotation can hold a Widget of any kind specified by [child]
+/// 
 class Annotation extends DraggablePlotObject {
   
    Annotation({
@@ -17,10 +21,12 @@ class Annotation extends DraggablePlotObject {
   })
   : _child = Center(child: child);
 
+  /// The child widget to display.
   final Widget _child;
 
   Widget get child => _child;
   
+
   @override
   bool isHit(PointerDownEvent event, Matrix4 transform) {
     final Offset globalPosition = transform.transformOffset(position);

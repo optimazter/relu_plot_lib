@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutterplot/flutterplot.dart';
 
+
+
 void main() {
   runApp(const MyApp());
 }
 
+/// This is an example app showing a simple example on how FlutterPlot can be used.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -31,13 +33,14 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+
 class _MyHomePageState extends State<MyHomePage> {
   
 
-
   @override
   Widget build(BuildContext context) {
-
+    
+    // FlutterPlot expects a list of double, let us generate some data.
     final x = List<double>.generate(10000, (i) => i + 1.0);
     final List<double> y = List.from(x);
 

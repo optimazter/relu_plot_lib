@@ -17,35 +17,51 @@ An example on how to implement a simple FlutterPlot Plot is shown below. For fur
 
 ```dart
 Plot(
+  xTicks: Ticks(
+    pretty: true, 
+    logarithmic: true,
+    unit: 'Hz',
+    ),
+  yTicks: Ticks(
+    pretty: true, 
+    unit: 'dBSPL'
+    ),
   graphs: [
     Graph(
-      x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 
-      y: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      x: List<double>.generate(10000, (i) => i + 1.0), 
+      y: List<double>.generate(10000, (i) => i + 1.0),
       color: Colors.blue,
       crosshairs: [
         Crosshair(
-          label: 'Crosshair 1', 
-          active: true, 
-          yPadding: 10, 
-          color: Colors.blue
-          ),],
+          width: 120,
+          label: 'Crosshair', 
+          yPadding: 20, 
+          color: Colors.red,
+        )
+      ],
       annotations: [
         Annotation(
-          width: 120,
+          width: 100,
           height: 100,
-          child: const Card.filled(
-          color: Colors.blue,
-          child: Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-            'This is an annotation.'
-         ),
-        )
-       )
-      )
-   ]),
-]);
+          child: Card.filled(
+            child: SizedBox(
+              width: 100,
+              height: 70,
+              child: Center(
+                child: Text(
+                  'This is an annotation!', 
+                  textAlign: TextAlign.center,
+                )
+              ),
+            ),
+            color: Colors.red
+          ),
+        ),
+      ]
+    ),
+  ],
+);
 ```
 
-Note that the FlutterPlot package is created with large datasets in mind, with few points as shown in the example above, 
+Note that the FlutterPlot package is created with large datasets in mind, with few points, 
 the Crosshairs movement will be weird as when it will search for the nearest value the nearest values are far from each other.
