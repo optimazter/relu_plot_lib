@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.blue,
                 crosshairs: [
                   Crosshair(
-                    width: 150,
+                    width: 120,
                     label: 'Crosshair', 
                     yPadding: 20, 
                     color: Colors.red,

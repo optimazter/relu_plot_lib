@@ -51,20 +51,6 @@ class Crosshair extends DraggablePlotObject {
   int prevIndex = 0;
 
   
-  @override
-  bool operator ==(Object other) =>
-      other is Crosshair &&
-      other.width == width &&
-      other.height == height &&
-      other.runtimeType == runtimeType &&
-      other.position == position &&
-      other.fractionDigits == fractionDigits &&
-      other.label == label;
-
-
-
-  @override
-  int get hashCode => label.hashCode * position.hashCode;
 
   @override
   bool isHit(PointerDownEvent event, Matrix4 transform) {
@@ -78,11 +64,10 @@ class Crosshair extends DraggablePlotObject {
 
   @override
   void onDrag(PointerMoveEvent event) {
-    position = position + event.localDelta;
   }
 
   void adjustPosition(PointerMoveEvent event, List<double> x, List<double> y, double xMin, double xMax) {
-    final int? i = _getXIndexFromPixel(x, xMin, xMax, event.localDelta.dx);
+    final int? i = _getXIndexFromPixel(x, event.localPosition.dx, xMin, xMax, event.localDelta.dx);
     if (i != null) {
       prevIndex = i;
       position = Offset(x[i], y[i]);
@@ -91,23 +76,22 @@ class Crosshair extends DraggablePlotObject {
 
 
 
-  int? _getXIndexFromPixel(List<double> x, double xMin, double xMax, double dx) {
-
-    if (position.dx <= xMin) {
+  int? _getXIndexFromPixel(List<double> x, double xCandidate, double xMin, double xMax, double dx) {
+    if (xCandidate <= xMin) {
       return 0;
     }
-    if (position.dx >= xMax) {
+    if (xCandidate >= xMax) {
       return x.length - 1;
     }
     if (dx < 0) {
-      for (int i = prevIndex - 1; i > 0; i --) {
-        if (x[i - 1] <= position.dx && position.dx <= x[i + 1]) {
+      for (int i = prevIndex - 1; i > 0; i--) {
+        if (x[i - 1] <= xCandidate && xCandidate <= x[i + 1]) {
           return i;
         }
       }
     }
-    for (int i = prevIndex + 1; i < x.length - 1; i ++) {
-      if (x[i - 1] <= position.dx && position.dx <= x[i + 1]) {
+    for (int i = prevIndex + 1; i < x.length - 1; i++) {
+      if (x[i - 1] <= xCandidate && xCandidate <= x[i + 1]) {
         return i;
       }
     } 
@@ -115,6 +99,23 @@ class Crosshair extends DraggablePlotObject {
 
   }
 
+
+  @override
+  bool operator ==(Object other) =>
+      other is Crosshair &&
+      other.label == label &&
+      other.yPadding == yPadding &&
+      other.color == color &&
+      other.width == width &&
+      other.height == height &&
+      other.runtimeType == runtimeType &&
+      other.position == position &&
+      other.fractionDigits == fractionDigits;
+
+
+
+  @override
+  int get hashCode => label.hashCode * position.hashCode;
   
 
   

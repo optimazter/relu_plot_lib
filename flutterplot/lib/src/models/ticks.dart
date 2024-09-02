@@ -11,7 +11,7 @@ const Map<int, String> SIPrefix = {
 
 
 
-const prettyLogTicks = <double>[5, 3, 2, 1];
+const prettyLogTicks = <double>[1, 2, 3, 5];
 
 const prettySteps = <double>[1, 2, 5, 10];
 
@@ -72,7 +72,7 @@ class Ticks {
 
     if (pretty) {
       if (logarithmic) {
-        _updateTicksPixels125(minimum, maximum);
+        _updatePrettyTicksLog(minimum, maximum);
       } else {
         _updatePrettyTicks(minimum, maximum);
       }
@@ -107,7 +107,7 @@ class Ticks {
     
 
 
-  void _updateTicksPixels125(double minimum, double maximum) {
+  void _updatePrettyTicksLog(double minimum, double maximum) {
     
     final double minimumBase10 = pow(10, minimum).toDouble();
     final double maximumBase10 = pow(10, maximum).toDouble();
@@ -117,22 +117,16 @@ class Ticks {
       _updatePrettyTicks(minimum, maximum);
 
     } else {
-      int magnitude = maximumBase10.magnitude();
-      while (_ticks.length < maxNumTicks) {
+      int magnitude = minimumBase10.magnitude();
+      double tick = minimum;
+      while (tick < maximum) {
         num power = pow(10, magnitude);
         for (int i = 0; i < prettyLogTicks.length; i++) {
-          final double x = (prettyLogTicks[i] * power).toLog10();
-
-          if (_ticks.isNotEmpty && (_ticks.last - x) / (maximum - minimum) > 0.05) {
-            _ticks.add(x);
-          }
-          if (_ticks.isEmpty && x < maximum) {
-            _ticks.add(x);
-          }
+          tick = (prettyLogTicks[i] * power).toLog10();
+          _ticks.add(tick);
         }
-        magnitude--;
+        magnitude++;
       }
-
     }
   }
 
