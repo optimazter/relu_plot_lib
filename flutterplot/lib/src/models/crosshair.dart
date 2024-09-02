@@ -1,6 +1,9 @@
 import 'dart:ui';
 
+import 'package:flutter/src/gestures/events.dart';
+import 'package:flutterplot/flutterplot.dart';
 import 'package:flutterplot/src/models/draggable_plot_object.dart';
+import 'package:flutterplot/src/utils/utils.dart';
 
 /// A crosshair which can be attached to a FlutterPlot [Graph].
 /// 
@@ -62,6 +65,55 @@ class Crosshair extends DraggablePlotObject {
 
   @override
   int get hashCode => label.hashCode * position.hashCode;
+
+  @override
+  bool isHit(PointerDownEvent event, Matrix4 transform) {
+    final double globalX = transform.transformX(position.dx);
+    if (event.localPosition.dx >= globalX - halfWidth && event.localPosition.dx <= globalX + halfWidth
+        && event.localPosition.dy >= yPadding && event.localPosition.dy <= yPadding + height) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void onDrag(PointerMoveEvent event) {
+    position = position + event.localDelta;
+  }
+
+  void adjustPosition(PointerMoveEvent event, List<double> x, List<double> y, double xMin, double xMax) {
+    final int? i = _getXIndexFromPixel(x, xMin, xMax, event.localDelta.dx);
+    if (i != null) {
+      prevIndex = i;
+      position = Offset(x[i], y[i]);
+    }
+  }
+
+
+
+  int? _getXIndexFromPixel(List<double> x, double xMin, double xMax, double dx) {
+
+    if (position.dx <= xMin) {
+      return 0;
+    }
+    if (position.dx >= xMax) {
+      return x.length - 1;
+    }
+    if (dx < 0) {
+      for (int i = prevIndex - 1; i > 0; i --) {
+        if (x[i - 1] <= position.dx && position.dx <= x[i + 1]) {
+          return i;
+        }
+      }
+    }
+    for (int i = prevIndex + 1; i < x.length - 1; i ++) {
+      if (x[i - 1] <= position.dx && position.dx <= x[i + 1]) {
+        return i;
+      }
+    } 
+    return null;
+
+  }
 
   
 

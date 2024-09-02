@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterplot/flutterplot.dart';
+import 'package:flutterplot/src/models/draggable_plot_object.dart';
 import 'package:flutterplot/src/utils/utils.dart';
 
 /// A graph which can be painted in a FlutterPlot [Plot] object
@@ -34,6 +35,8 @@ class Graph {
 
   /// The Crosshairs which will be attached to this graph.
   final List<Crosshair>? crosshairs;
+
+  List<DraggablePlotObject> get plotObjects => [...?annotations, ...?crosshairs];
 
   bool _log = false;
 

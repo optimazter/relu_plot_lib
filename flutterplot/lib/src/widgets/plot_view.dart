@@ -4,6 +4,7 @@ import 'package:flutterplot/flutterplot.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterplot/src/models/camera.dart';
+import 'package:flutterplot/src/models/draggable_plot_object.dart';
 import 'package:flutterplot/src/rendering/annotation_layer.dart';
 import 'package:flutterplot/src/rendering/crosshair_painter.dart';
 import 'package:flutterplot/src/rendering/graph_painter.dart';
@@ -12,9 +13,8 @@ import 'package:flutterplot/src/utils/utils.dart';
 
 
 enum Interaction {
-  crosshair,
+  plotObject,
   graph,
-  annotation,
 } 
 
 
@@ -45,10 +45,9 @@ class PlotView extends StatefulWidget {
 
 
 
-  Interaction currentInteraction = Interaction.crosshair;
+  Interaction currentInteraction = Interaction.graph;
 
-  Annotation? _activeAnnotation;
-  Crosshair? _activeCrosshair;
+  DraggablePlotObject? _activePlotObject;
   Graph? _activeGraph;
 
 
@@ -74,8 +73,7 @@ class PlotView extends StatefulWidget {
     _initGraphPaths(plot.graphs);
     _initExtremes(plot.graphs);
     _initCamera(plotExtremes.xMax - plotExtremes.xMin, plotExtremes.yMax - plotExtremes.yMin, width, height);
-    _initAnnotations(plot.graphs);
-    _initCrosshairs(plot.graphs);
+    _initPlotObjects(plot.graphs);
     _initDecimate();
   }
 
@@ -91,89 +89,17 @@ class PlotView extends StatefulWidget {
   }
 
 
-  bool _checkAnnotationHit(PointerDownEvent event) {
+  bool _checkPlotObjectHit(PointerDownEvent event) {
     for (Graph graph in plot.graphs) {
-      if (graph.annotations == null) {
-        continue;
-      }
-      for (Annotation annotation in graph.annotations!) {
-        final Offset globalPosition = camera.transform.transformOffset(annotation.position);
-        if (event.localPosition.dx >= globalPosition.dx && event.localPosition.dx <= globalPosition.dx + annotation.width
-           && event.localPosition.dy >= globalPosition.dy && event.localPosition.dy <= globalPosition.dy + annotation.height) {
-          _activeAnnotation = annotation;
+      for (DraggablePlotObject obj in graph.plotObjects) {
+        if (obj.isHit(event, camera.transform)) {
+          _activePlotObject = obj;
           _activeGraph = graph;
           return true;
         }
       }
     }
     return false;
-  }
-
-
-  bool _checkCrosshairHit(PointerDownEvent event) {
-
-    final Offset eventPixel = event.localPosition;
-
-    for (Graph graph in plot.graphs) {
-      if (graph.crosshairs == null) {
-        continue;
-      }
-      for (Crosshair crosshair in graph.crosshairs!) {
-        final double globalX = camera.transform.transformX(crosshair.position.dx);
-        if (eventPixel.dx >= globalX - crosshair.halfWidth && eventPixel.dx <= globalX + crosshair.halfWidth
-            && eventPixel.dy >= crosshair.yPadding && eventPixel.dy <= crosshair.yPadding + crosshair.height) {
-          _activeCrosshair = crosshair;
-          _activeGraph = graph;
-          return true;
-        }
-      } 
-    }
-    return false;
-  }
-
-  void _moveActiveAnnotation(PointerMoveEvent event) {
-    if (_activeAnnotation != null) {
-      event = event.transformed(camera.transformInverted);
-      _activeAnnotation!.position += event.localDelta;
-    }
-  }
-
-  void _moveActiveCrosshair(PointerMoveEvent event) {
-    if (_activeCrosshair != null) {
-      event = event.transformed(camera.transformInverted);
-      final Offset localPosition = _activeCrosshair!.position + event.localDelta;
-      final int? i = _getXIndexFromPixel(_activeGraph!, localPosition.dx, event.localDelta.dx, _activeCrosshair!.prevIndex);
-      if (i != null) {
-        _activeCrosshair!.position = Offset(_activeGraph!.x[i], _activeGraph!.y[i]);
-        _activeCrosshair!.prevIndex = i;  
-      }
-    
-    }     
-  }
-
-
-  int? _getXIndexFromPixel(Graph graph, double x, double dx, int prevIndex) {
-
-    if (x <= plotExtremes.xMin) {
-      return 0;
-    }
-    if (x >= plotExtremes.xMax) {
-      return graph.x.length - 1;
-    }
-    if (dx < 0) {
-      for (int i = prevIndex - 1; i > 0; i --) {
-        if (graph.x[i - 1] <= x && x <= graph.x[i + 1]) {
-          return i;
-        }
-      }
-    }
-    for (int i = prevIndex + 1; i < graph.x.length - 1; i ++) {
-      if (graph.x[i - 1] <= x && x <= graph.x[i + 1]) {
-        return i;
-      }
-    } 
-    return null;
-
   }
 
 
@@ -228,39 +154,25 @@ class PlotView extends StatefulWidget {
 
 
 
-  void _initAnnotations(List<Graph> graphs) {
+  void _initPlotObjects(List<Graph> graphs) {
     graphs.forEach((graph) {
-    if (graph.annotations != null) {
-      for (var annotation in graph.annotations!) {
-        if (annotation.position == Offset.infinite) {
+      graph.plotObjects.forEach((plotObject) {
+        if (plotObject.position == Offset.infinite) {
           final int index = graph.x.length ~/ 2;
-          annotation.position = Offset(graph.x[index], graph.y[index]);
-        }
-      }
-    }
-    });
-  }
-
-
-  void _initCrosshairs(List<Graph> graphs) {
-    graphs.forEach((graph) {
-      if (graph.crosshairs != null) {
-        for (var crosshair in graph.crosshairs!) {
-          if (crosshair.position == Offset.infinite) {
-            final int index = graph.x.length ~/ 2;
-            crosshair.prevIndex = index;
-            crosshair.position = Offset(graph.x[index], graph.y[index]);
+          plotObject.position = Offset(graph.x[index], graph.y[index]);
+          if (plotObject is Crosshair) {
+            plotObject.prevIndex = index;
           }
         }
-      }
+      });
     });
   }
+
 
 
   void _disposeValues() {
     graphPaths.clear();
-    _activeAnnotation = null;
-    _activeCrosshair = null;
+    _activePlotObject = null;
     _activeGraph = null;
   }
 
@@ -309,14 +221,10 @@ class FlutterPlotState extends State<PlotView> {
 
   void _handlePointerDown(PointerDownEvent event) {
     setState(() {
-      if (widget._checkAnnotationHit(event)) {
-        widget.currentInteraction = Interaction.annotation;
-        widget._activeAnnotation?.onDragStart?.call(widget._activeAnnotation!);
+      if (widget._checkPlotObjectHit(event)) {
+        widget.currentInteraction = Interaction.plotObject;
+        widget._activePlotObject?.onDragStart();
       }
-      else if (widget._checkCrosshairHit(event)) {     
-        widget.currentInteraction = Interaction.crosshair;
-        widget._activeCrosshair?.onDragStart?.call(widget._activeCrosshair!);
-      } 
       else {
         widget.currentInteraction = Interaction.graph;
       }
@@ -325,11 +233,9 @@ class FlutterPlotState extends State<PlotView> {
 
   void _handlePointerUp(PointerUpEvent event) {
     switch(widget.currentInteraction) {
-      case Interaction.annotation:
-        widget._activeAnnotation?.onDragEnd?.call(widget._activeAnnotation!.position);
+      case Interaction.plotObject:
+        widget._activePlotObject?.onDragEnd();
         break;
-      case Interaction.crosshair:
-        widget._activeCrosshair?.onDragEnd?.call(widget._activeCrosshair!.position);
       case Interaction.graph:
         break;
     }
@@ -342,16 +248,15 @@ class FlutterPlotState extends State<PlotView> {
     event = event.transformed(Matrix4.inverted(widget.camera.transform));
 
     switch(widget.currentInteraction) {
-      case Interaction.annotation:
+      case Interaction.plotObject:
         setState(() {
-          widget._moveActiveAnnotation(event);
+          event = event.transformed(widget.camera.transformInverted);
+          widget._activePlotObject?.onDrag(event);
+          if (widget._activePlotObject is Crosshair) {
+            final crosshair = widget._activePlotObject as Crosshair;
+            crosshair.adjustPosition(event, widget._activeGraph!.x, widget._activeGraph!.y, widget.plotExtremes.xMin, widget.plotExtremes.xMax);
+          }
         });
-        break;
-      case Interaction.crosshair:
-        setState(() {
-          widget._moveActiveCrosshair(event);
-        });
-        break;
       case Interaction.graph:
           _moveFreq++;
           _moveOffset += event.localDelta;

@@ -1,10 +1,10 @@
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutterplot/src/utils/utils.dart';
 
 
 class TicksPainter extends CustomPainter {
+
 
   const TicksPainter({
     required this.xTicks,
