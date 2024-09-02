@@ -115,7 +115,6 @@ class PlotView extends StatefulWidget {
       localConstraints: plot.constraints ?? plotExtremes,
       minimumScale: plot.minimumScale,
       maximumScale: plot.maximumScale,
-
     );
 
   }
@@ -213,7 +212,7 @@ class FlutterPlotState extends State<PlotView> {
     }
     else {
       setState(() {
-        widget.camera.scale(scale, scale);    
+        widget.scalePlot(scale, scale);    
       });
     }
   }
@@ -287,7 +286,6 @@ class FlutterPlotState extends State<PlotView> {
   @override
   void didUpdateWidget(covariant PlotView oldWidget) {
     super.didUpdateWidget(oldWidget);
-
   }
 
 
