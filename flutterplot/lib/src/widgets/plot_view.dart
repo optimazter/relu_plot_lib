@@ -223,7 +223,7 @@ class FlutterPlotState extends State<PlotView> {
     setState(() {
       if (widget._checkPlotObjectHit(event)) {
         widget.currentInteraction = Interaction.plotObject;
-        widget._activePlotObject?.onDragStart();
+        widget._activePlotObject?.onDragStart?.call(widget._activePlotObject!);
       }
       else {
         widget.currentInteraction = Interaction.graph;
@@ -234,7 +234,7 @@ class FlutterPlotState extends State<PlotView> {
   void _handlePointerUp(PointerUpEvent event) {
     switch(widget.currentInteraction) {
       case Interaction.plotObject:
-        widget._activePlotObject?.onDragEnd();
+        widget._activePlotObject?.onDragEnd?.call(widget._activePlotObject!);
         break;
       case Interaction.graph:
         break;
