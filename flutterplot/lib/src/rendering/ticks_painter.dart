@@ -45,7 +45,7 @@ class TicksPainter extends CustomPainter {
       _paintUnit(canvas, size, xUnit!, Offset(size.width / 2, size.height + bottomPadding / 2));
     }
     if (yUnit != null) {
-      _paintUnit(canvas, size, xUnit!, Offset(-leftPadding, size.height / 2));
+      _paintUnit(canvas, size, yUnit!, Offset(-leftPadding, size.height / 2));
     }
 
 

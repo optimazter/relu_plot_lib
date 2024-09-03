@@ -40,7 +40,6 @@ class Graph {
 
   bool _log = false;
 
-
   void toLog(bool xLog, bool yLog) {
     if (!_log) {
       _log = true;

@@ -9,14 +9,13 @@ const Map<int, String> SIPrefix = {
   -12:'p', -9:'n', -6:'µ', -3:'m', 0:'', 3: 'k', 6:'M', 9:'G', 12: 'T'
 };
 
-
-
 const prettyLogTicks = <double>[1, 2, 3, 5];
 
 const prettySteps = <double>[1, 2, 5, 10];
 
 
 
+/// The ticks to annotate an axis of the FlutterPlot [plot].
 class Ticks {
 
 
@@ -53,10 +52,10 @@ class Ticks {
   final bool logarithmic;
 
 
-  bool get empty => predefinedTicks.isEmpty && !pretty && maxNumTicks == 0;
-
   final List<double> _ticks = [];
   final List<String> _labels = [];
+
+  bool get empty => predefinedTicks.isEmpty && !pretty && maxNumTicks == 0;
 
   List<double> get ticks => _ticks;
 
@@ -64,8 +63,11 @@ class Ticks {
   
 
   void update(double minimum, double maximum) {
+    if (minimum.isInfinite || maximum.isInfinite) {
+      return;
+    }
     if (empty) {
-      return null;
+      return;
     }
     _ticks.clear();
     _labels.clear();
@@ -95,6 +97,9 @@ class Ticks {
 
 
   String _toLabel(double number) {
+    if (!number.isFinite) {
+      return '';
+    }
     int magnitude = number.magnitude();
     while (magnitude > SIPrefix.keys.first && magnitude < SIPrefix.keys.last) {
       if (SIPrefix.keys.contains(magnitude)) {
@@ -111,6 +116,10 @@ class Ticks {
     
     final double minimumBase10 = pow(10, minimum).toDouble();
     final double maximumBase10 = pow(10, maximum).toDouble();
+
+    if (minimumBase10.isInfinite || maximumBase10.isInfinite) {
+      return;
+    }
   
     if ((maximumBase10 / minimumBase10) < 10) {
 

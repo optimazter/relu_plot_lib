@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/src/gestures/events.dart';
@@ -66,23 +67,64 @@ class Crosshair extends DraggablePlotObject {
   void onDrag(PointerMoveEvent event) {
   }
 
-  void adjustPosition(PointerMoveEvent event, List<double> x, List<double> y, double xMin, double xMax) {
-    final int? i = _getXIndexFromPixel(x, event.localPosition.dx, xMin, xMax, event.localDelta.dx);
-    if (i != null) {
-      prevIndex = i;
-      position = Offset(x[i], y[i]);
+  void adjustPosition(PointerMoveEvent event, List<double> x, List<double> y, double xMin, double xMax, bool xLog, bool yLog) {
+    if (event.localPosition.dx <= xMin) {
+      prevIndex = 0;
+      position = Offset(x[prevIndex], y[prevIndex]);
+    }
+    else if (event.localPosition.dx >= xMax) {
+      prevIndex = x.length - 1;
+      position = Offset(x[prevIndex], y[prevIndex]);
+    }
+    else if (x.length > 100) {
+      final int? i = _getXIndexFromPixel(x, event.localPosition.dx, event.localDelta.dx);
+      if (i != null) {
+        prevIndex = i;
+        position = Offset(x[i], y[i]);
+      }
+    } else {
+      print("Ok");
+      final int? i = x.firstIndexWhereOrNull((x) => x >= event.localPosition.dx);
+      if (i != null) {
+        prevIndex = i;
+        position = interpolation(Offset(x[i - 1], y[i - 1]), Offset(x[i], y[i]), event.localPosition.dx, xLog, yLog);
+      }
     }
   }
 
 
+  Offset interpolation(Offset p1, Offset p2, double x, bool xLog, bool yLog) {
+    final y;
+    if (xLog && !yLog) {
+      y = p1.dy + (pow(10, x) - pow(10, p1.dx)) * (p2.dy - p1.dy) / (pow(10, p2.dx) - pow(10, p1.dx));
+    } 
+    else if (!xLog && yLog) {
+      y = pow(10, p1.dy) + (x - p1.dx) * (pow(10, p2.dy) - pow(10, p1.dy)) / (p2.dx - p1.dx);
+    } else {
+      y = p1.dy + (x - p1.dx) * (p2.dy - p1.dy) / (p2.dx - p1.dx);
+    }
+    return Offset(x, y);
+  }
 
-  int? _getXIndexFromPixel(List<double> x, double xCandidate, double xMin, double xMax, double dx) {
-    if (xCandidate <= xMin) {
-      return 0;
+  int? _getNearestPoint(List<double> x, List<double> y, double xCandidate, double dx) {
+    if (dx < 0) {
+      for (int i = prevIndex; i > 0; i--) {
+        if (xCandidate <= x[i]) {
+          return i;
+        }
+      }
     }
-    if (xCandidate >= xMax) {
-      return x.length - 1;
-    }
+    for (int i = max(1, prevIndex - 1); i < x.length - 1; i++) {
+      if (xCandidate >= x[i - 1]) {
+        return i;
+      }
+    } 
+    return null;
+  }
+
+
+
+  int? _getXIndexFromPixel(List<double> x, double xCandidate, double dx) {
     if (dx < 0) {
       for (int i = prevIndex - 1; i > 0; i--) {
         if (x[i - 1] <= xCandidate && xCandidate <= x[i + 1]) {

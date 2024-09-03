@@ -40,9 +40,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     
-    // FlutterPlot expects a list of double, let us generate some data.
-    final x = List<double>.generate(10000, (i) => i + 1.0);
-    final List<double> y = List.from(x);
 
     return Scaffold(
       appBar: AppBar(
@@ -62,12 +59,12 @@ class _MyHomePageState extends State<MyHomePage> {
             yTicks: Ticks(
               pretty: true, 
               logarithmic: false,
-              unit: 'dBSPL'
+              unit: 'dB'
               ),
             graphs: [
               Graph(
-                x: x, 
-                y: y,
+                x: List<double>.generate(10000, (i) => i + 1.0), 
+                y: List<double>.generate(10000, (i) => i + 1.0),
                 color: Colors.blue,
                 crosshairs: [
                   Crosshair(

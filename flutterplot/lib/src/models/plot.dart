@@ -56,7 +56,6 @@ class Plot extends StatelessWidget {
   });
 
 
-
   /// The FlutterPlot graphs to paint.
   final List<Graph> graphs;
 
@@ -93,7 +92,6 @@ class Plot extends StatelessWidget {
   final double maximumScale;
 
 
-
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) => PlotView(
@@ -102,7 +100,6 @@ class Plot extends StatelessWidget {
       height: constraints.maxHeight,
     )
   );
-
 
 
   bool isEqualConfigTo(Plot other) =>

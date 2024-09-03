@@ -10,36 +10,28 @@ class Camera {
     required this.canvasWidth,
     required this.canvasHeight,
     required PlotConstraints localConstraints,
-    required double minimumScale,
-    required double maximumScale,
+    required this.minimumScale,
+    required this.maximumScale,
   }) : 
-    _minimumScaleX = minimumScale * canvasWidth / 2,
-    _maximumScaleX = maximumScale * canvasWidth / 2,
-    _minimumScaleY = minimumScale * canvasHeight / 2,
-    _maximumScaleY = maximumScale * canvasWidth / 2,
     _projection = makeOrthographicMatrix(
       localConstraints.xMin, 
       localConstraints.xMax, 
       localConstraints.yMax, 
       localConstraints.yMin, 
-      -1, 1),
-    _scale = Matrix4.identity()..scale(canvasWidth / 2, canvasHeight / 2),
-    _translation = Matrix4.identity()..translate((localConstraints.xMax - localConstraints.xMin) / 2, -(localConstraints.yMax - localConstraints.yMin) / 2);
+      -1, 1)..scale(canvasWidth / 2, canvasHeight / 2),
+    _affine = Matrix4.identity()..translate(-localConstraints.xMin, -localConstraints.yMax);
     
 
   final double canvasWidth;
   final double canvasHeight;
 
-  final double _minimumScaleX;
-  final double _maximumScaleX;
-  final double _minimumScaleY;
-  final double _maximumScaleY;
+  final double minimumScale;
+  final double maximumScale;
 
-  final Matrix4 _scale;
-  final Matrix4 _translation;
+  final Matrix4 _affine;
   final Matrix4 _projection;
 
-  Matrix4 get transform => _scale * _projection * _translation;
+  Matrix4 get transform => _projection * _affine;
   Matrix4? get transformInverted => Matrix4.tryInvert(transform);
 
 
@@ -52,23 +44,21 @@ class Camera {
   } 
 
 
-  void scale(double scaleX, double scaleY) {
-    
-    _scale.translate(1.0, 1.0);
-    _scale.scale(scaleX, scaleY);
-
-    if (_scale.scaleX < _minimumScaleX || _scale.scaleX > _maximumScaleX) {
-      _scale.scale(1 / scaleX, 1.0);
+  void scale(double x, double y, double scaleX, double scaleY) {
+    _affine.translate(x, y);
+    _affine.scale(scaleX, scaleY);
+    if (_affine.scaleX < minimumScale || _affine.scaleX > maximumScale) {
+      _affine.scale(1 / scaleX, 1 / scaleY);
     }
-    if (_scale.scaleY < _minimumScaleY || _scale.scaleY > _maximumScaleY) {
-      _scale.scale(1.0, 1 / scaleY);
+    if (_affine.scaleY < minimumScale || _affine.scaleY > maximumScale) {
+      _affine.scale(1 / scaleX, 1 / scaleY);
     }
-   _scale.translate(-1.0, -1.0);
+    _affine.translate(-x, -y);
 
   }
 
   void move(double x, double y) {
-    _translation.translate(x, y);
+    _affine.translate(x, y);
   }
 
 

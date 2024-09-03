@@ -24,17 +24,19 @@ class PlotView extends StatefulWidget {
   PlotView({
     super.key, 
     required this.plot, 
-    required this.width,
-    required this.height,
-  })
+    required double width,
+    required double height,
+  }) :
+  _width = width,
+  _height = height 
   {
     init();
   }
 
 
   final Plot plot;
-  final double width;
-  final double height;
+  final double _width;
+  final double _height;
 
   final Map<Graph, Path> graphPaths = {};
 
@@ -50,6 +52,8 @@ class PlotView extends StatefulWidget {
   DraggablePlotObject? _activePlotObject;
   Graph? _activeGraph;
 
+  double get width => _width - (paddingL + paddingR);
+  double get height => _height - (paddingB + paddingT);
 
   double get paddingL => plot.padding + 30; 
   double get paddingB => plot.padding + 30;
@@ -83,8 +87,8 @@ class PlotView extends StatefulWidget {
     plot.onConstraintsChanged?.call(camera.localConstraints, plotExtremes);
   }
 
-  void scalePlot(double scaleX, double scaleY) {
-    camera.scale(scaleX, scaleY);
+  void scalePlot(Offset moveOffset, double scaleX, double scaleY) {
+    camera.scale(moveOffset.dx, moveOffset.dy, scaleX, scaleY);
     plot.onConstraintsChanged?.call(camera.localConstraints, plotExtremes);
   }
 
@@ -193,6 +197,7 @@ class FlutterPlotState extends State<PlotView> {
 
 
   void _handleMouseScroll(PointerEvent event) {
+    event = event.transformed(widget.camera.transformInverted);
     double scale = 0;
     if (event is PointerPanZoomUpdateEvent) {
       scale = event.localPanDelta.dy.sign;
@@ -202,17 +207,17 @@ class FlutterPlotState extends State<PlotView> {
     scale = scale > 0 ? 0.9 : 1.1;
     if (_shiftDown) {
       setState(() {
-        widget.scalePlot(scale, 1.0);
+        widget.scalePlot(event.localPosition, scale, 1.0);
       });
     }
     else if (_controlDown) {
       setState(() {
-        widget.scalePlot(1.0, scale);
+        widget.scalePlot(event.localPosition, 1.0, scale);
       });
     }
     else {
       setState(() {
-        widget.scalePlot(scale, scale);    
+        widget.scalePlot(event.localPosition, scale, scale);    
       });
     }
   }
@@ -244,16 +249,18 @@ class FlutterPlotState extends State<PlotView> {
 
   void _handlePointerMove(PointerMoveEvent event) {
 
-    event = event.transformed(Matrix4.inverted(widget.camera.transform));
+    event = event.transformed(widget.camera.transformInverted);
 
     switch(widget.currentInteraction) {
       case Interaction.plotObject:
         setState(() {
-          event = event.transformed(widget.camera.transformInverted);
           widget._activePlotObject?.onDrag(event);
           if (widget._activePlotObject is Crosshair) {
             final crosshair = widget._activePlotObject as Crosshair;
-            crosshair.adjustPosition(event, widget._activeGraph!.x, widget._activeGraph!.y, widget.plotExtremes.xMin, widget.plotExtremes.xMax);
+            crosshair.adjustPosition(event, widget._activeGraph!.x, 
+              widget._activeGraph!.y, widget.plotExtremes.xMin, widget.plotExtremes.xMax, 
+              widget.xTicks?.logarithmic ?? false, widget.yTicks?.logarithmic ?? false)
+            ;
           }
         });
       case Interaction.graph:

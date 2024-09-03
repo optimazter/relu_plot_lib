@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 
-
 /// A constraints object which specifies the bounding box of a [plot]
 class PlotConstraints {
 
@@ -45,7 +44,7 @@ class PlotConstraints {
 
   /// Minimum value on y-axis.
   final double yMin;
-  
+
   /// Maximum value on y-axis.
   final double yMax;
 
