@@ -83,7 +83,6 @@ class Crosshair extends DraggablePlotObject {
         position = Offset(x[i], y[i]);
       }
     } else {
-      print("Ok");
       final int? i = x.firstIndexWhereOrNull((x) => x >= event.localPosition.dx);
       if (i != null) {
         prevIndex = i;
@@ -105,23 +104,6 @@ class Crosshair extends DraggablePlotObject {
     }
     return Offset(x, y);
   }
-
-  int? _getNearestPoint(List<double> x, List<double> y, double xCandidate, double dx) {
-    if (dx < 0) {
-      for (int i = prevIndex; i > 0; i--) {
-        if (xCandidate <= x[i]) {
-          return i;
-        }
-      }
-    }
-    for (int i = max(1, prevIndex - 1); i < x.length - 1; i++) {
-      if (xCandidate >= x[i - 1]) {
-        return i;
-      }
-    } 
-    return null;
-  }
-
 
 
   int? _getXIndexFromPixel(List<double> x, double xCandidate, double dx) {

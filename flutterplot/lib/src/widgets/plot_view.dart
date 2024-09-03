@@ -259,8 +259,8 @@ class FlutterPlotState extends State<PlotView> {
             final crosshair = widget._activePlotObject as Crosshair;
             crosshair.adjustPosition(event, widget._activeGraph!.x, 
               widget._activeGraph!.y, widget.plotExtremes.xMin, widget.plotExtremes.xMax, 
-              widget.xTicks?.logarithmic ?? false, widget.yTicks?.logarithmic ?? false)
-            ;
+              widget.xTicks?.logarithmic ?? false, widget.yTicks?.logarithmic ?? false
+            );
           }
         });
       case Interaction.graph:
