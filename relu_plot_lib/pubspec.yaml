@@ -1,0 +1,22 @@
+name: relu_plot_lib
+description: A simple graph tool for flutter desktop applications.
+version: 1.0.1
+repository: https://github.com/optimazter/flutterplot
+
+environment:
+  sdk: '>=3.1.2 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  test: ^1.24.9
+  vector_math: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+
