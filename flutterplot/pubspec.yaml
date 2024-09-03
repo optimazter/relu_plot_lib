@@ -1,6 +1,7 @@
 name: flutterplot
-description: A new Flutter package project.
-version: 0.0.1
+description: A simple graph tool for flutter desktop applications.
+version: 1.0.1
+repository: https://github.com/optimazter/flutterplot
 
 environment:
   sdk: '>=3.1.2 <4.0.0'

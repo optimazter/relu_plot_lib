@@ -1,12 +1,19 @@
+# About
+
 FlutterPlot is a simple graph tool for flutter desktop applications.
 
+# Usage 
+To use FlutterPlot, simply add [flutterplot] as a dependency in your *pubspec.yaml* file.
 
+```yaml
+dependencies:
+    flutterplot: ^1.0.1
+```
 
 https://github.com/user-attachments/assets/a8744c57-70a8-48db-9ebc-835a002256c1
 
 
-
-An example on how to implement a simple FlutterPlot Plot is shown below.
+An example on how to implement the simple FlutterPlot Plot in the video above is shown below.
 
 ```dart
 Plot(
