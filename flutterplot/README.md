@@ -2,6 +2,10 @@ FlutterPlot is a simple graph tool for flutter desktop applications.
 
 
 
+https://github.com/user-attachments/assets/a8744c57-70a8-48db-9ebc-835a002256c1
+
+
+
 An example on how to implement a simple FlutterPlot Plot is shown below.
 
 ```dart
