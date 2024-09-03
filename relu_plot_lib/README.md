@@ -7,7 +7,7 @@ To use relu_plot_lib, simply add *relu_plot_lib* as a dependency in your *pubspe
 
 ```yaml
 dependencies:
-    flutterplot: ^1.0.1
+  relu_plot_lib: ^1.0.1
 ```
 
 https://github.com/user-attachments/assets/a8744c57-70a8-48db-9ebc-835a002256c1
