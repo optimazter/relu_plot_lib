@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:relu_plot_lib/relu_plot_lib.dart';
 
 
-
 void main() {
   runApp(const MyApp());
 }
 
-/// This is an example app showing a simple example on how FlutterPlot can be used.
+/// This is an example app showing a simple example on how relu_plot_lib can be used.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'flutterplot demo',
+      title: 'relu_plot_lib demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'flutterplot demo'),
+      home: const MyHomePage(title: 'relu_plot_lib demo'),
     );
   }
 }
