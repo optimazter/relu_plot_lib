@@ -10,7 +10,7 @@ dependencies:
   relu_plot_lib: ^1.0.1
 ```
 
-https://github.com/user-attachments/assets/a8744c57-70a8-48db-9ebc-835a002256c1
+![relu_plot_lib_demo](https://github.com/user-attachments/assets/430b330b-be1d-45cb-a55b-dec45110c839)
 
 
 An example on how to implement the simple relu_plot_lib Plot in the video above is shown below.
