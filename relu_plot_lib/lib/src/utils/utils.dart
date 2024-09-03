@@ -4,17 +4,12 @@ import 'package:flutter/material.dart';
 
 
 void debugLog(String message) {
-    debugPrint('FlutterPlot: $message');
+    debugPrint('relu_plot_lib: $message');
   }
 
 
-class FlutterPlotException implements Exception {
-  String cause;
-  FlutterPlotException(this.cause);
-}
 
-
-extension FlutterPlotList<T> on List<T> {
+extension ReluPlotLibList<T> on List<T> {
 
   int? firstIndexWhereOrNull(bool Function(T element) test) {
     for (int i = 0; i < this.length; i++) {
@@ -43,7 +38,7 @@ extension FlutterPlotList<T> on List<T> {
 }
 
 
-extension FlutterPlotDouble on double {
+extension ReluPlotLibDouble on double {
 
   int magnitude() {
     if (this.compareTo(0.0) == 0) {
@@ -59,13 +54,13 @@ extension FlutterPlotDouble on double {
 
 }
 
-extension FlutterPlotOffset on Offset {
+extension ReluPlotLibOffset on Offset {
 
   Offset toLog10(bool x, bool y) => Offset(x ? log(this.dx) / ln10 : dx, y ? log(this.dy) / ln10 : dy);
 
 }
 
-extension FlutterPlotMatrix4 on Matrix4 {
+extension ReluPlotLibMatrix4 on Matrix4 {
 
 
   /// Transform [x] of type [double] using the transformation defined by

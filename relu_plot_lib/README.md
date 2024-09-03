@@ -1,9 +1,9 @@
 # About
 
-FlutterPlot is a simple graph tool for flutter desktop applications.
+*relu_plot_lib* is a simple graph tool for flutter desktop applications.
 
 # Usage 
-To use FlutterPlot, simply add [flutterplot] as a dependency in your *pubspec.yaml* file.
+To use relu_plot_lib, simply add *relu_plot_lib* as a dependency in your *pubspec.yaml* file.
 
 ```yaml
 dependencies:
@@ -13,7 +13,7 @@ dependencies:
 https://github.com/user-attachments/assets/a8744c57-70a8-48db-9ebc-835a002256c1
 
 
-An example on how to implement the simple FlutterPlot Plot in the video above is shown below.
+An example on how to implement the simple relu_plot_lib Plot in the video above is shown below.
 
 ```dart
 Plot(

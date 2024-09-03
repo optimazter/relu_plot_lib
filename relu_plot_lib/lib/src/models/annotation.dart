@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutterplot/src/models/draggable_plot_object.dart';
-import 'package:flutterplot/src/utils/utils.dart';
+import 'package:relu_plot_lib/src/models/draggable_plot_object.dart';
+import 'package:relu_plot_lib/src/utils/utils.dart';
 
 
 
-/// An annotation which can be attached to a FlutterPlot [Graph].
+/// An annotation which can be attached to a [Graph].
 /// 
 /// The annotation can be moved around on the graph by dragging the mouse 
 /// while pressing the left mouse button. The annotation can hold a Widget of any kind specified by [child]
