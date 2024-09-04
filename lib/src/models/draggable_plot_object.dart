@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 
-
 /// A draggable plot object which can be placed and moved around the plot.
-/// 
+///
 abstract class DraggablePlotObject {
-
-
-  DraggablePlotObject({
-    required this.width,
-    required this.height,
-    this.position = Offset.infinite,
-    this.onDragStart,
-    this.onDragEnd
-  }) :
-  halfWidth = width / 2, 
-  halfHeight = height / 2;
+  DraggablePlotObject(
+      {required this.width,
+      required this.height,
+      this.position = Offset.infinite,
+      this.onDragStart,
+      this.onDragEnd})
+      : halfWidth = width / 2,
+        halfHeight = height / 2;
 
   /// The hit box width of the object in pixels.
   final double width;
@@ -42,6 +38,4 @@ abstract class DraggablePlotObject {
 
   /// Logic for deciding if the object is hit or not.
   bool isHit(PointerDownEvent event, Matrix4 transform);
-
-
 }

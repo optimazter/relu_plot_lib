@@ -10,3 +10,7 @@
 
     - Annotation movement fixed so it is centered.
     - Zooming fixed so it is centered around the pointer.
+
+## [1.0.4] (2024-Sep-04)
+
+    - Shorten pubspec.yaml description.

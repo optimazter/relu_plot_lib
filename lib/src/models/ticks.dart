@@ -2,23 +2,24 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:relu_plot_lib/src/utils/utils.dart';
 
-
-
-
 const Map<int, String> sIPrefix = {
-  -12:'p', -9:'n', -6:'µ', -3:'m', 0:'', 3: 'k', 6:'M', 9:'G', 12: 'T'
+  -12: 'p',
+  -9: 'n',
+  -6: 'µ',
+  -3: 'm',
+  0: '',
+  3: 'k',
+  6: 'M',
+  9: 'G',
+  12: 'T'
 };
 
 const prettyLogTicks = <double>[1, 2, 3, 5];
 
 const prettySteps = <double>[1, 2, 5, 10];
 
-
-
 /// The ticks to annotate an axis of the [plot].
 class Ticks {
-
-
   Ticks({
     this.predefinedTicks = const [],
     this.logarithmic = false,
@@ -27,8 +28,8 @@ class Ticks {
     this.maxNumTicks = 15,
     this.minNumTicks = 11,
     this.unit,
-  }): assert(!(predefinedTicks.isNotEmpty && pretty == true), '[pretty] can not be true if [ticks] is specified.');
-
+  }) : assert(!(predefinedTicks.isNotEmpty && pretty == true),
+            '[pretty] can not be true if [ticks] is specified.');
 
   /// Predefine a list of ticks.
   final List<double> predefinedTicks;
@@ -39,18 +40,17 @@ class Ticks {
   /// Number of fraction digits to display at each tick.
   final int fractionDigits;
 
-  /// Number of ticks to display. 
+  /// Number of ticks to display.
   final int minNumTicks;
 
-  /// Number of ticks to display. 
+  /// Number of ticks to display.
   final int maxNumTicks;
 
   /// The unit to denote the ticks.
   final String? unit;
 
-  /// Determines if the axis should be logarithmic or not. 
+  /// Determines if the axis should be logarithmic or not.
   final bool logarithmic;
-
 
   final List<double> _ticks = [];
   final List<String> _labels = [];
@@ -60,7 +60,6 @@ class Ticks {
   List<double> get ticks => _ticks;
 
   List<String> get labels => _labels;
-  
 
   void update(double minimum, double maximum) {
     if (minimum.isInfinite || maximum.isInfinite) {
@@ -78,11 +77,9 @@ class Ticks {
       } else {
         _updatePrettyTicks(minimum, maximum);
       }
-    }
-    else if (predefinedTicks.isNotEmpty) {
+    } else if (predefinedTicks.isNotEmpty) {
       _updateTicksPixelsFrom(predefinedTicks);
-    }
-    else {
+    } else {
       _updateTicksPixelsNaive(minimum, maximum);
     }
 
@@ -91,10 +88,7 @@ class Ticks {
     } else {
       _labels.addAll(_ticks.map(_toLabel));
     }
-
-
   }
-
 
   String _toLabel(double number) {
     if (!number.isFinite) {
@@ -103,28 +97,23 @@ class Ticks {
     int magnitude = number.magnitude();
     while (magnitude > sIPrefix.keys.first && magnitude < sIPrefix.keys.last) {
       if (sIPrefix.keys.contains(magnitude)) {
-        return '${(number/pow(10, magnitude)).toStringAsFixed(fractionDigits)} ${sIPrefix[magnitude]}';
-      } 
+        return '${(number / pow(10, magnitude)).toStringAsFixed(fractionDigits)} ${sIPrefix[magnitude]}';
+      }
       magnitude--;
     }
     return '$number';
   }
-    
-
 
   void _updatePrettyTicksLog(double minimum, double maximum) {
-    
     final double minimumBase10 = pow(10, minimum).toDouble();
     final double maximumBase10 = pow(10, maximum).toDouble();
 
     if (minimumBase10.isInfinite || maximumBase10.isInfinite) {
       return;
     }
-  
+
     if ((maximumBase10 / minimumBase10) < 10) {
-
       _updatePrettyTicks(minimum, maximum);
-
     } else {
       int magnitude = minimumBase10.magnitude();
       double tick = minimum;
@@ -138,7 +127,6 @@ class Ticks {
       }
     }
   }
-
 
   void _updateTicksPixelsFrom(List<double> ticksToAdd) {
     _ticks.addAll(ticksToAdd);
@@ -155,7 +143,10 @@ class Ticks {
   }
 
   void _updatePrettyTicks(double minimum, double maximum) {
-    if (_ticks.isEmpty || minimum < _ticks.first || maximum > _ticks.last || _getNumTicksInRange(minimum, maximum) < minNumTicks) {
+    if (_ticks.isEmpty ||
+        minimum < _ticks.first ||
+        maximum > _ticks.last ||
+        _getNumTicksInRange(minimum, maximum) < minNumTicks) {
       _ticks.clear();
       final stepSize = _getPrettyStepSize(minimum, maximum);
       final startTick = (minimum / stepSize).floor() * stepSize;
@@ -164,7 +155,7 @@ class Ticks {
         _ticks.add(tick);
         tick += stepSize;
       }
-    } 
+    }
   }
 
   double _getPrettyStepSize(double minimum, double maximum) {
@@ -182,26 +173,21 @@ class Ticks {
     return 10.0 * magnitude;
   }
 
-
   int _getNumTicksInRange(double minimum, double maximum) {
     final startIndex = _ticks.firstIndexWhereOrNull((x) => x < minimum) ?? 0;
     final stopIndex = _ticks.firstIndexWhereOrNull((x) => x > maximum) ?? 0;
     return stopIndex - startIndex;
   }
 
-
   @override
-  bool operator ==(covariant Ticks other) => 
-          listEquals(predefinedTicks, other.predefinedTicks) && 
-          pretty == other.pretty && 
-          fractionDigits == other.fractionDigits &&
-          minNumTicks == other.minNumTicks &&
-          maxNumTicks == other.maxNumTicks &&
-          unit == other.unit;
+  bool operator ==(covariant Ticks other) =>
+      listEquals(predefinedTicks, other.predefinedTicks) &&
+      pretty == other.pretty &&
+      fractionDigits == other.fractionDigits &&
+      minNumTicks == other.minNumTicks &&
+      maxNumTicks == other.maxNumTicks &&
+      unit == other.unit;
 
   @override
   int get hashCode => ticks.hashCode * pretty.hashCode;
-
-
 }
-

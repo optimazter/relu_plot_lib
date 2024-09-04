@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:relu_plot_lib/relu_plot_lib.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -32,72 +31,58 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-
 class _MyHomePageState extends State<MyHomePage> {
-  
-
   @override
   Widget build(BuildContext context) {
-    
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Plot(
-            xTicks: Ticks(
-              pretty: true, 
-              logarithmic: true,
-              unit: 'Hz',
-              fractionDigits: 1,
-              ),
-            yTicks: Ticks(
-              pretty: true, 
-              logarithmic: false,
-              unit: 'dB'
-              ),
-            graphs: [
-              Graph(
-                x: List<double>.generate(10000, (i) => i + 1.0), 
-                y: List<double>.generate(10000, (i) => i + 1.0),
-                color: Colors.blue,
-                crosshairs: [
-                  Crosshair(
-                    width: 120,
-                    label: 'Crosshair', 
-                    yPadding: 20, 
-                    color: Colors.red,
-                  )
-                ],
-                annotations: [
-                  Annotation(
-                    width: 100,
-                    height: 100,
-                    child: const Card.filled(
-                      color: Colors.red,
-                      child: SizedBox(
-                        width: 100,
-                        height: 70,
-                        child: Center(
-                          child: Text(
-                            'This is an annotation!', 
-                            textAlign: TextAlign.center,
-                          )
+          child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Plot(
+                xTicks: Ticks(
+                  pretty: true,
+                  logarithmic: true,
+                  unit: 'Hz',
+                  fractionDigits: 1,
+                ),
+                yTicks: Ticks(pretty: true, logarithmic: false, unit: 'dB'),
+                graphs: [
+                  Graph(
+                      x: List<double>.generate(10000, (i) => i + 1.0),
+                      y: List<double>.generate(10000, (i) => i + 1.0),
+                      color: Colors.blue,
+                      crosshairs: [
+                        Crosshair(
+                          width: 120,
+                          label: 'Crosshair',
+                          yPadding: 20,
+                          color: Colors.red,
+                        )
+                      ],
+                      annotations: [
+                        Annotation(
+                          width: 100,
+                          height: 100,
+                          child: const Card.filled(
+                            color: Colors.red,
+                            child: SizedBox(
+                              width: 100,
+                              height: 70,
+                              child: Center(
+                                  child: Text(
+                                'This is an annotation!',
+                                textAlign: TextAlign.center,
+                              )),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                ]
-              ),
-            ],
-          )
-        )
-      ),
+                      ]),
+                ],
+              ))),
     );
   }
 }
-

@@ -6,20 +6,19 @@ import 'package:relu_plot_lib/src/models/draggable_plot_object.dart';
 import 'package:relu_plot_lib/src/utils/utils.dart';
 
 /// A graph which can be painted in a [Plot] object
-/// 
+///
 /// The graph painted must be specified by the [x] and [y] parameters.
 /// Note that [x] and [y] must be of equal length.
 
 class Graph {
-
   Graph({
-    required this.x, 
+    required this.x,
     required this.y,
     this.color,
     this.annotations,
-    this.crosshairs, 
-  }) : 
-  assert(x.length == y.length, 'Graph [x] and [y] must be of equal length, but found ${x.length} x-values and ${y.length} y-values');
+    this.crosshairs,
+  }) : assert(x.length == y.length,
+            'Graph [x] and [y] must be of equal length, but found ${x.length} x-values and ${y.length} y-values');
 
   /// x-values
   final List<double> x;
@@ -36,7 +35,8 @@ class Graph {
   /// The Crosshairs which will be attached to this graph.
   final List<Crosshair>? crosshairs;
 
-  List<DraggablePlotObject> get plotObjects => [...?annotations, ...?crosshairs];
+  List<DraggablePlotObject> get plotObjects =>
+      [...?annotations, ...?crosshairs];
 
   bool _log = false;
 
@@ -56,7 +56,6 @@ class Graph {
     }
   }
 
-
   @override
   bool operator ==(Object other) =>
       other is Graph &&
@@ -68,8 +67,4 @@ class Graph {
 
   @override
   int get hashCode => x.hashCode * y.hashCode;
-  
-  
-
 }
-

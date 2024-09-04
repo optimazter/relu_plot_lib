@@ -1,11 +1,7 @@
 name: relu_plot_lib
 description: 
-  A simple graph tool for flutter desktop applications.
-  Draw multiple graphs with thousands of data points without performance issues, 
-  navigate around and scale the plot using your mouse, 
-  annotate the plot with any widget you want and move it around the coordinate space of your data,
-  attach crosshairs to your graphs to read and compare graph values.
-version: 1.0.3
+  A simple graph tool for flutter desktop applications which allows for drawing of multiple graphs.
+version: 1.0.4
 repository: https://github.com/optimazter/relu_plot_lib
 
 environment:

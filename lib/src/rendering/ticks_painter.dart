@@ -2,10 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:relu_plot_lib/src/utils/utils.dart';
 
-
 class TicksPainter extends CustomPainter {
-
-
   const TicksPainter({
     required this.xTicks,
     required this.xLabels,
@@ -13,7 +10,7 @@ class TicksPainter extends CustomPainter {
     required this.yLabels,
     required this.xUnit,
     required this.yUnit,
-    required this.bottomPadding, 
+    required this.bottomPadding,
     required this.leftPadding,
     required this.transform,
   });
@@ -28,40 +25,41 @@ class TicksPainter extends CustomPainter {
   final double leftPadding;
   final Matrix4 transform;
 
-
   @override
   void paint(Canvas canvas, Size size) {
-
     final Paint linePaint = Paint()..color = Colors.black54;
 
     _paintBorders(canvas, size, linePaint);
-    if (xTicks != null && yTicks != null && xLabels != null && yLabels != null) {
+    if (xTicks != null &&
+        yTicks != null &&
+        xLabels != null &&
+        yLabels != null) {
       final xTicksCanvas = xTicks!.map(transform.transformX).toList();
       final yTicksCanvas = yTicks!.map(transform.transformY).toList();
       _paintTicks(canvas, xTicksCanvas, yTicksCanvas, size, linePaint);
-      _paintLabels(canvas, xTicksCanvas, yTicksCanvas, xLabels!, yLabels!, size);
+      _paintLabels(
+          canvas, xTicksCanvas, yTicksCanvas, xLabels!, yLabels!, size);
     }
     if (xUnit != null) {
-      _paintUnit(canvas, size, xUnit!, Offset(size.width / 2, size.height + bottomPadding / 2));
+      _paintUnit(canvas, size, xUnit!,
+          Offset(size.width / 2, size.height + bottomPadding / 2));
     }
     if (yUnit != null) {
       _paintUnit(canvas, size, yUnit!, Offset(-leftPadding, size.height / 2));
     }
-
-
-
   }
 
   void _paintBorders(Canvas canvas, Size size, Paint paint) {
-    canvas.drawLine(Offset(0, size.height), Offset(size.width, size.height), paint);
+    canvas.drawLine(
+        Offset(0, size.height), Offset(size.width, size.height), paint);
     canvas.drawLine(Offset.zero, Offset(0, size.height), paint);
     canvas.drawLine(Offset.zero, Offset(size.width, 0), paint);
-    canvas.drawLine(Offset(size.width, size.height), Offset(size.width, 0), paint);
+    canvas.drawLine(
+        Offset(size.width, size.height), Offset(size.width, 0), paint);
   }
 
-
-
-  void _paintTicks(Canvas canvas, List<double>? xTicks, List<double>? yTicks, Size size, Paint paint) {
+  void _paintTicks(Canvas canvas, List<double>? xTicks, List<double>? yTicks,
+      Size size, Paint paint) {
     canvas.save();
     canvas.clipRect(Rect.fromLTRB(0, 0, size.width, size.height));
     xTicks?.forEach((x) {
@@ -74,43 +72,33 @@ class TicksPainter extends CustomPainter {
   }
 
   void _paintUnit(Canvas canvas, Size size, String unit, Offset position) {
-
-    const TextStyle textStyle = TextStyle(
-      color:  Colors.black, 
-      letterSpacing: -0.5,
-      fontSize: 15
-    );
-    final ParagraphBuilder paragraphBuilder = ParagraphBuilder(
-      ParagraphStyle()
-    )
-    ..pushStyle(textStyle.getTextStyle())
-    ..addText(unit);
+    const TextStyle textStyle =
+        TextStyle(color: Colors.black, letterSpacing: -0.5, fontSize: 15);
+    final ParagraphBuilder paragraphBuilder = ParagraphBuilder(ParagraphStyle())
+      ..pushStyle(textStyle.getTextStyle())
+      ..addText(unit);
 
     final Paragraph paragraph = paragraphBuilder.build()
-    ..layout(ParagraphConstraints(width: size.width));
+      ..layout(ParagraphConstraints(width: size.width));
 
     canvas.drawParagraph(paragraph, position);
   }
 
-  void _paintLabels(Canvas canvas, List<double> xTicks, List<double> yTicks, List<String> xLabels, List<String> yLabels, Size size) {
-
-    const TextStyle textStyle = TextStyle(
-          color:  Colors.black, 
-          letterSpacing: -0.5,
-          fontSize: 12.5
-        );
+  void _paintLabels(Canvas canvas, List<double> xTicks, List<double> yTicks,
+      List<String> xLabels, List<String> yLabels, Size size) {
+    const TextStyle textStyle =
+        TextStyle(color: Colors.black, letterSpacing: -0.5, fontSize: 12.5);
     canvas.save();
-    canvas.clipRect(Rect.fromLTRB(0, 0, size.width, size.height + bottomPadding));
+    canvas
+        .clipRect(Rect.fromLTRB(0, 0, size.width, size.height + bottomPadding));
     for (int i = 0; i < xTicks.length; i++) {
-
-      final ParagraphBuilder paragraphBuilder = ParagraphBuilder(
-        ParagraphStyle()
-      )
-      ..pushStyle(textStyle.getTextStyle())
-      ..addText(xLabels[i]);
+      final ParagraphBuilder paragraphBuilder =
+          ParagraphBuilder(ParagraphStyle())
+            ..pushStyle(textStyle.getTextStyle())
+            ..addText(xLabels[i]);
 
       final Paragraph paragraph = paragraphBuilder.build()
-      ..layout(ParagraphConstraints(width: size.width));
+        ..layout(ParagraphConstraints(width: size.width));
 
       canvas.drawParagraph(paragraph, Offset(xTicks[i], size.height));
     }
@@ -121,28 +109,22 @@ class TicksPainter extends CustomPainter {
     canvas.clipRect(Rect.fromLTRB(-leftPadding, 0, size.width, size.height));
 
     for (int i = 0; i < yTicks.length; i++) {
-
-      final ParagraphBuilder paragraphBuilder = ParagraphBuilder(
-        ParagraphStyle()
-      )
-      ..pushStyle(textStyle.getTextStyle())
-      ..addText(yLabels[i]);
+      final ParagraphBuilder paragraphBuilder =
+          ParagraphBuilder(ParagraphStyle())
+            ..pushStyle(textStyle.getTextStyle())
+            ..addText(yLabels[i]);
 
       final Paragraph paragraph = paragraphBuilder.build()
-      ..layout(ParagraphConstraints(width: size.width));
+        ..layout(ParagraphConstraints(width: size.width));
 
       canvas.drawParagraph(paragraph, Offset(0, yTicks[i]));
     }
 
     canvas.restore();
-
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
-
-
-  
 }
