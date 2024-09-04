@@ -15,7 +15,6 @@ class GraphPainter extends CustomPainter {
 
 
 
-
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
@@ -24,7 +23,7 @@ class GraphPainter extends CustomPainter {
 
     graphPaths.forEach((graph, path) {
 
-      final paint = Paint()..color = graph.color ?? Color(0x00000000);
+      final paint = Paint()..color = graph.color ?? const Color(0x00000000);
       paint.style = PaintingStyle.stroke;
       canvas.drawPath(path, paint);
 

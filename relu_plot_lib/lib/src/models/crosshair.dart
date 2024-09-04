@@ -1,7 +1,6 @@
 import 'dart:math';
-import 'dart:ui';
 
-import 'package:flutter/src/gestures/events.dart';
+import 'package:flutter/material.dart';
 import 'package:relu_plot_lib/relu_plot_lib.dart';
 import 'package:relu_plot_lib/src/models/draggable_plot_object.dart';
 import 'package:relu_plot_lib/src/utils/utils.dart';
@@ -86,7 +85,7 @@ class Crosshair extends DraggablePlotObject {
 
 
   Offset interpolation(Offset p1, Offset p2, double x, bool xLog, bool yLog) {
-    final y;
+    final double y;
     if (xLog && !yLog) {
       y = p1.dy + (pow(10, x) - pow(10, p1.dx)) * (p2.dy - p1.dy) / (pow(10, p2.dx) - pow(10, p1.dx));
     } 

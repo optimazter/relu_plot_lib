@@ -5,7 +5,7 @@ import 'package:relu_plot_lib/src/utils/utils.dart';
 
 
 
-const Map<int, String> SIPrefix = {
+const Map<int, String> sIPrefix = {
   -12:'p', -9:'n', -6:'µ', -3:'m', 0:'', 3: 'k', 6:'M', 9:'G', 12: 'T'
 };
 
@@ -101,9 +101,9 @@ class Ticks {
       return '';
     }
     int magnitude = number.magnitude();
-    while (magnitude > SIPrefix.keys.first && magnitude < SIPrefix.keys.last) {
-      if (SIPrefix.keys.contains(magnitude)) {
-        return '${(number/pow(10, magnitude)).toStringAsFixed(fractionDigits)} ${SIPrefix[magnitude]}';
+    while (magnitude > sIPrefix.keys.first && magnitude < sIPrefix.keys.last) {
+      if (sIPrefix.keys.contains(magnitude)) {
+        return '${(number/pow(10, magnitude)).toStringAsFixed(fractionDigits)} ${sIPrefix[magnitude]}';
       } 
       magnitude--;
     }

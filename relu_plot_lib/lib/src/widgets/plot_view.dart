@@ -43,8 +43,6 @@ class PlotView extends StatefulWidget {
   late final PlotConstraints plotExtremes;
   late final Camera camera;
 
-  late final int decimate;
-
 
 
   Interaction currentInteraction = Interaction.graph;
@@ -78,7 +76,6 @@ class PlotView extends StatefulWidget {
     _initExtremes(plot.graphs);
     _initCamera(plotExtremes.xMax - plotExtremes.xMin, plotExtremes.yMax - plotExtremes.yMin, width, height);
     _initPlotObjects(plot.graphs);
-    _initDecimate();
   }
 
 
@@ -127,26 +124,16 @@ class PlotView extends StatefulWidget {
 
   }
 
-
-  void _initDecimate() {
-    if (plot.decimate != null) {
-      decimate = plot.decimate!;
-    } else {
-      final display = WidgetsBinding.instance.platformDispatcher.views.first.display;
-      debugLog('Measured Refresh Rate was ${display.refreshRate} Hz');
-      decimate = display.refreshRate ~/ 10;
-    }
-  }
   
   void _initGraphPaths(List<Graph> graphs) {
-    graphs.forEach((graph) {
+    for (var graph in graphs) {
       final Path path = Path();
       path.moveTo(graph.x[0], graph.y[0]);
       for (int i = 1; i < graph.x.length; i++) {
         path.lineTo(graph.x[i], graph.y[i]);
       }
       graphPaths[graph] = path;
-    });
+    }
   }
 
 
@@ -162,8 +149,8 @@ class PlotView extends StatefulWidget {
 
 
   void _initPlotObjects(List<Graph> graphs) {
-    graphs.forEach((graph) {
-      graph.plotObjects.forEach((plotObject) {
+    for (var graph in graphs) {
+      for (var plotObject in graph.plotObjects) {
         if (plotObject.position == Offset.infinite) {
           final int index = graph.x.length ~/ 2;
           plotObject.position = Offset(graph.x[index], graph.y[index]);
@@ -171,8 +158,8 @@ class PlotView extends StatefulWidget {
             plotObject.prevIndex = index;
           }
         }
-      });
-    });
+      }
+    }
   }
 
 

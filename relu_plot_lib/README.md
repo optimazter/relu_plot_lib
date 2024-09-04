@@ -7,13 +7,13 @@ To use relu_plot_lib, simply add *relu_plot_lib* as a dependency in your *pubspe
 
 ```yaml
 dependencies:
-  relu_plot_lib: ^1.0.1
+  relu_plot_lib: ^1.0.3
 ```
 
 ![relu_plot_lib_demo](https://github.com/user-attachments/assets/430b330b-be1d-45cb-a55b-dec45110c839)
 
 
-An example on how to implement the simple relu_plot_lib Plot in the video above is shown below.
+An example on how to implement the simple relu_plot_lib Plot in the video above is shown below. This code is available in the *examples* folder as well.
 
 ```dart
 Plot(
@@ -21,10 +21,11 @@ Plot(
     pretty: true, 
     logarithmic: true,
     unit: 'Hz',
+    fractionDigits: 1,
     ),
   yTicks: Ticks(
     pretty: true, 
-    unit: 'dBSPL'
+    unit: 'dB'
     ),
   graphs: [
     Graph(
@@ -43,7 +44,8 @@ Plot(
         Annotation(
           width: 100,
           height: 100,
-          child: Card.filled(
+          child: const Card.filled(
+            color: Colors.red,
             child: SizedBox(
               width: 100,
               height: 70,
@@ -54,12 +56,11 @@ Plot(
                 )
               ),
             ),
-            color: Colors.red
           ),
         ),
       ]
     ),
   ],
-);
+)
 ```
 

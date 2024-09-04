@@ -5,9 +5,10 @@ import 'package:relu_plot_lib/src/utils/utils.dart';
 
 class AnnotationLayer extends StatelessWidget {
 
-  AnnotationLayer({
+  const AnnotationLayer({
     required this.annotations,
     required this.transform,
+    super.key
   });
 
   final List<Annotation> annotations;

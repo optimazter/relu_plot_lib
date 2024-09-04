@@ -29,13 +29,13 @@ class CrosshairPainter extends CustomPainter {
 
     final linePaint = Paint();
     final boxPaint = Paint();
-    final TextStyle textStyle = TextStyle(
+    TextStyle textStyle = const TextStyle(
           color:  Colors.black, 
     );
 
-    crosshairs.forEach((crosshair) {
+    for (var crosshair in crosshairs) {
       final Offset globalPosition = transform.transformOffset(crosshair.position);
-      linePaint..color = Colors.black;
+      linePaint..color = Colors.black..strokeWidth = 1.1;
       boxPaint..color = crosshair.color..style = PaintingStyle.fill;
       
       canvas.save();
@@ -48,14 +48,13 @@ class CrosshairPainter extends CustomPainter {
       _paintCrosshairBox(canvas, globalPosition, crosshair.width, crosshair.height, crosshair.yPadding, boxPaint);
       _paintCrosshairText(canvas, crosshair.label, crosshair.position, globalPosition, crosshair.yPadding, textStyle, crosshair.width, crosshair.fractionDigits);
       canvas.restore();
-    });
- 
+    }
   }
 
   void _paintCrosshairLine(Canvas canvas, Size size, Offset globalPosition, double padding, Paint linePaint, Paint boxPaint) {
-    canvas.drawCircle(globalPosition, 5, boxPaint);
     canvas.drawLine(Offset(0, globalPosition.dy), Offset(size.width, globalPosition.dy), linePaint);
     canvas.drawLine(Offset(globalPosition.dx, padding), Offset(globalPosition.dx, size.height), linePaint);
+    canvas.drawCircle(globalPosition, 5, boxPaint);
   }
 
 
@@ -64,7 +63,7 @@ class CrosshairPainter extends CustomPainter {
             ParagraphStyle()
           )
           ..pushStyle(textStyle.getTextStyle())
-          ..addText(' ${label}\n  x: ${
+          ..addText(' $label\n  x: ${
             logarithmicXLabel ? pow(10, localPosition.dx).toStringAsFixed(fractionDigits) : (localPosition.dx).toStringAsFixed(fractionDigits) 
             } ${
               xUnit ?? ''

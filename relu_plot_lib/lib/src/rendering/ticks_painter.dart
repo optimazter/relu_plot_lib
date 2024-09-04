@@ -32,7 +32,7 @@ class TicksPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
 
-    final Paint linePaint = Paint()..color = Colors.black;
+    final Paint linePaint = Paint()..color = Colors.black54;
 
     _paintBorders(canvas, size, linePaint);
     if (xTicks != null && yTicks != null && xLabels != null && yLabels != null) {
@@ -75,7 +75,7 @@ class TicksPainter extends CustomPainter {
 
   void _paintUnit(Canvas canvas, Size size, String unit, Offset position) {
 
-    final TextStyle textStyle = TextStyle(
+    const TextStyle textStyle = TextStyle(
       color:  Colors.black, 
       letterSpacing: -0.5,
       fontSize: 15
@@ -94,7 +94,7 @@ class TicksPainter extends CustomPainter {
 
   void _paintLabels(Canvas canvas, List<double> xTicks, List<double> yTicks, List<String> xLabels, List<String> yLabels, Size size) {
 
-    final TextStyle textStyle = TextStyle(
+    const TextStyle textStyle = TextStyle(
           color:  Colors.black, 
           letterSpacing: -0.5,
           fontSize: 12.5
