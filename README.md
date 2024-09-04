@@ -2,6 +2,8 @@
 
 *relu_plot_lib* is a simple graph tool for flutter desktop applications.
 
+Add multiple graphs and annotate them with widgets of your choosing, navigate around the plot and scale it using your mouse, and read and compare graph values with crosshairs.
+
 # Usage 
 To use relu_plot_lib, simply add *relu_plot_lib* as a dependency in your *pubspec.yaml* file.
 
@@ -10,7 +12,8 @@ dependencies:
   relu_plot_lib: ^1.0.3
 ```
 
-![relu_plot_lib_demo](https://github.com/user-attachments/assets/430b330b-be1d-45cb-a55b-dec45110c839)
+![output](https://github.com/user-attachments/assets/8f43a374-468a-4d60-b252-d78259e6382f)
+
 
 
 An example on how to implement the simple relu_plot_lib Plot in the video above is shown below. This code is available in the *examples* folder as well.
