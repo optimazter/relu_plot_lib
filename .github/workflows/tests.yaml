@@ -17,7 +17,6 @@ jobs:
             channel: 'stable'
             
         - name: Run Tests
-          working-directory: ./relu_plot_lib
           run: |
             flutter pub get
             flutter test
