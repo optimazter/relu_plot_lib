@@ -30,16 +30,16 @@ class Annotation extends DraggablePlotObject {
   @override
   bool isHit(PointerDownEvent event, Matrix4 transform) {
     final Offset globalPosition = transform.transformOffset(position);
-    if (event.localPosition.dx >= globalPosition.dx && event.localPosition.dx <= globalPosition.dx + width
-        && event.localPosition.dy >= globalPosition.dy && event.localPosition.dy <= globalPosition.dy + height) {
+    if (event.localPosition.dx >= globalPosition.dx - halfWidth && event.localPosition.dx <= globalPosition.dx + halfWidth
+        && event.localPosition.dy >= globalPosition.dy - halfHeight && event.localPosition.dy <= globalPosition.dy + halfHeight) {
       return true;
     }
     return false;
   }
   
   @override
-  void onDrag(PointerMoveEvent event) {
-    position += event.localDelta;
+  void onDrag(PointerMoveEvent event, Matrix4 eventTransform) {
+    position = eventTransform.transformOffset(event.localPosition);
   }
 
   @override

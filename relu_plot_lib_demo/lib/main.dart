@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.only(left: 100),
           child: Plot(
             xTicks: Ticks(
               pretty: true, 

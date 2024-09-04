@@ -430,7 +430,7 @@ packages:
       path: "../relu_plot_lib"
       relative: true
     source: path
-    version: "1.0.1"
+    version: "1.0.2"
   shelf:
     dependency: transitive
     description:

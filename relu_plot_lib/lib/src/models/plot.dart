@@ -6,9 +6,9 @@ import 'package:relu_plot_lib/src/widgets/plot_view.dart';
 import 'graph.dart';
 import 'plot_constraints.dart';
 
-/// A widget that displays a FlutterPlot Plot.
+/// A widget that displays a Plot.
 /// 
-/// The plot will display the FlutterPlot Graph objects specified
+/// The plot will display the Graph objects specified
 /// 
 /// This sample shows a simple graph:
 /// 
@@ -39,15 +39,13 @@ import 'plot_constraints.dart';
 
 class Plot extends StatelessWidget {
 
-   ///Creates a widget that displays a FlutterPlot Plot
-  
+  ///Creates a widget that displays a Plot
   const Plot({
     super.key,
     required this.graphs,
     this.xTicks,
     this.yTicks,
     this.constraints,
-    this.decimate,
     this.onConstraintsChanged,
     this.strokeWidth = 1,
     this.padding = 0,
@@ -68,11 +66,6 @@ class Plot extends StatelessWidget {
   /// Initial Plot constraints. 
   /// If xTicks or yTicks is logarithmic, it is expected that the constraints are in the log10 space.
   final PlotConstraints? constraints;
-
-  /// Specifies the integer which will decimate the update frequency
-  /// used by [onPointerMove] when the Plot is moved.
-  /// If null, decimate will be calculated according to the screen refresh rate.
-  final int? decimate;
 
   /// Function called every time the PlotConstraints changes. 
   /// To optimize performance, do not use this feature!
@@ -107,7 +100,6 @@ class Plot extends StatelessWidget {
     other.xTicks == xTicks &&
     other.yTicks == yTicks &&
     other.constraints == constraints &&
-    other.decimate == decimate &&
     other.strokeWidth == strokeWidth &&
     other.padding == padding &&
     other.minimumScale == minimumScale &&

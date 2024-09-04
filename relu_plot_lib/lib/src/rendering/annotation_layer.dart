@@ -20,8 +20,8 @@ class AnnotationLayer extends StatelessWidget {
       children: annotations.map((annotation) {
         final globalPosition = transform.transformOffset(annotation.position);
         return Positioned(
-          left: globalPosition.dx,
-          top: globalPosition.dy,
+          left: globalPosition.dx - annotation.width / 2,
+          top: globalPosition.dy - annotation.height / 2,
           child: annotation.child
         );
       }).toList(),

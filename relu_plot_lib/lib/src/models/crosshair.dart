@@ -6,7 +6,7 @@ import 'package:relu_plot_lib/relu_plot_lib.dart';
 import 'package:relu_plot_lib/src/models/draggable_plot_object.dart';
 import 'package:relu_plot_lib/src/utils/utils.dart';
 
-/// A crosshair which can be attached to a FlutterPlot [Graph].
+/// A crosshair which can be attached to a [Graph].
 /// 
 /// The crosshair can be moved around on the graph by dragging the mouse 
 /// while pressing the left mouse button. The crosshair will display the 
@@ -24,9 +24,7 @@ class Crosshair extends DraggablePlotObject {
     super.position,
     super.onDragStart,
     super.onDragEnd,
-    })
-    : halfWidth = width / 2, 
-    halfHeight = height / 2;
+    });
 
   /// The label to display for this crosshair.
   final String label;
@@ -37,12 +35,6 @@ class Crosshair extends DraggablePlotObject {
 
   /// The color of the display box as well as circle for this crosshair.
   Color color;
-
-  /// The [width] divided by 2
-  final double halfWidth;
-
-  /// The [height] divided by 2
-  final double halfHeight;
 
   /// The number of fraction digits to show in the crosshair label.
   final int fractionDigits;
@@ -64,29 +56,30 @@ class Crosshair extends DraggablePlotObject {
   }
 
   @override
-  void onDrag(PointerMoveEvent event) {
+  void onDrag(PointerMoveEvent event, Matrix4 eventTransform) {
   }
 
-  void adjustPosition(PointerMoveEvent event, List<double> x, List<double> y, double xMin, double xMax, bool xLog, bool yLog) {
-    if (event.localPosition.dx <= xMin) {
+  void adjustPosition(PointerMoveEvent event, Matrix4 eventTransform, List<double> x, List<double> y, double xMin, double xMax, bool xLog, bool yLog) {
+    final xPosition = eventTransform.transformX(event.localPosition.dx);
+    if (xPosition <= xMin) {
       prevIndex = 0;
       position = Offset(x[prevIndex], y[prevIndex]);
     }
-    else if (event.localPosition.dx >= xMax) {
+    else if (xPosition >= xMax) {
       prevIndex = x.length - 1;
       position = Offset(x[prevIndex], y[prevIndex]);
     }
     else if (x.length > 100) {
-      final int? i = _getXIndexFromPixel(x, event.localPosition.dx, event.localDelta.dx);
+      final int? i = _getXIndexFromPixel(x, xPosition, event.localDelta.dx);
       if (i != null) {
         prevIndex = i;
         position = Offset(x[i], y[i]);
       }
     } else {
-      final int? i = x.firstIndexWhereOrNull((x) => x >= event.localPosition.dx);
+      final int? i = x.firstIndexWhereOrNull((x) => x >= xPosition);
       if (i != null) {
         prevIndex = i;
-        position = interpolation(Offset(x[i - 1], y[i - 1]), Offset(x[i], y[i]), event.localPosition.dx, xLog, yLog);
+        position = interpolation(Offset(x[i - 1], y[i - 1]), Offset(x[i], y[i]), xPosition, xLog, yLog);
       }
     }
   }

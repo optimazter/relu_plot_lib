@@ -15,7 +15,7 @@ const prettySteps = <double>[1, 2, 5, 10];
 
 
 
-/// The ticks to annotate an axis of the FlutterPlot [plot].
+/// The ticks to annotate an axis of the [plot].
 class Ticks {
 
 

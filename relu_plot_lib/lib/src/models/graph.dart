@@ -5,7 +5,7 @@ import 'package:relu_plot_lib/relu_plot_lib.dart';
 import 'package:relu_plot_lib/src/models/draggable_plot_object.dart';
 import 'package:relu_plot_lib/src/utils/utils.dart';
 
-/// A graph which can be painted in a FlutterPlot [Plot] object
+/// A graph which can be painted in a [Plot] object
 /// 
 /// The graph painted must be specified by the [x] and [y] parameters.
 /// Note that [x] and [y] must be of equal length.
