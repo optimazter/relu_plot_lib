@@ -12,7 +12,7 @@ dependencies:
   relu_plot_lib: ^1.0.3
 ```
 
-![output](https://github.com/user-attachments/assets/8f43a374-468a-4d60-b252-d78259e6382f)
+![output](https://github.com/user-attachments/assets/9ab75fa4-d451-4d35-9975-7116090b87ad)
 
 
 
