@@ -250,7 +250,7 @@ class FlutterPlotState extends State<PlotView> {
         event.logicalKey == LogicalKeyboardKey.controlLeft) {
       _controlDown = event is KeyDownEvent;
     }
-    return _shiftDown || _controlDown;
+    return false;
   }
 
   @override

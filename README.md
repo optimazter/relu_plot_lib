@@ -9,7 +9,7 @@ To use relu_plot_lib, simply add *relu_plot_lib* as a dependency in your *pubspe
 
 ```yaml
 dependencies:
-  relu_plot_lib: ^1.0.5
+  relu_plot_lib: ^1.0.6
 ```
 
 ![relu_plot_lib_demo](https://github.com/user-attachments/assets/68e43a1f-9d5e-4687-8e16-e4bfd79b57f5)

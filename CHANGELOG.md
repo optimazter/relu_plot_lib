@@ -19,4 +19,8 @@
 
     - Fixed ticks label so that the label is rounded to specified amount of precision when out of SI-prefix range.
 
+## [1.0.6] (2024-Sep-09)
+
+    - Hardwarekeyboard handlers now return false to allow other handlers to listen to the same keys.
+
 
