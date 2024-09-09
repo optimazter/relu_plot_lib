@@ -14,3 +14,9 @@
 ## [1.0.4] (2024-Sep-04)
 
     - Shorten pubspec.yaml description.
+
+## [1.0.5] (2024-Sep-09)
+
+    - Fixed ticks label so that the label is rounded to specified amount of precision when out of SI-prefix range.
+
+

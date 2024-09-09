@@ -40,10 +40,10 @@ class Ticks {
   /// Number of fraction digits to display at each tick.
   final int fractionDigits;
 
-  /// Number of ticks to display.
+  /// Maximum number of ticks to display.
   final int minNumTicks;
 
-  /// Number of ticks to display.
+  /// Minimum number of ticks to display.
   final int maxNumTicks;
 
   /// The unit to denote the ticks.
@@ -101,7 +101,7 @@ class Ticks {
       }
       magnitude--;
     }
-    return '$number';
+    return number.toStringAsFixed(fractionDigits);
   }
 
   void _updatePrettyTicksLog(double minimum, double maximum) {

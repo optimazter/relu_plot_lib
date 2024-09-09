@@ -1,7 +1,7 @@
 name: relu_plot_lib
 description: 
   A simple graph tool for flutter desktop applications which allows for drawing of multiple graphs.
-version: 1.0.4
+version: 1.0.5
 repository: https://github.com/optimazter/relu_plot_lib
 
 environment:
